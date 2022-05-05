@@ -5,22 +5,40 @@ from pymemcache.client import base
 
 stocks = fetchall('stocks', ['stock_name'])
 stocks_name = [i['stock_name'] for i in stocks]
-#url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,LAST'
 
+# Configure logging
+logger = logging.getLogger('stocksMonitorService')
+logger.setLevel(logging.INFO)
+fileLogHandler = logging.FileHandler(filename='info.log', mode='a')
+fileLogHandler.setLevel(logging.INFO)
+logger.addHandler(fileLogHandler)
+formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s')
+fileLogHandler.setFormatter(formatter)
+
+logger.info("Start logging")
 
 
 def main():
-    client = base.Client(('127.0.0.1', 11211)) # TODO: add yml config
+    client = base.Client(('127.0.0.1', 11211)) # TODO: CREATE add yml config
+    try:
+        client.get(".") # check memcached
+    except ConnectionRefusedError as err:
+        logger.fatal("Memcahed error refused connection!")
+        exit()
+    except Exception as err:
+        logger.fatal(err)
+        exit()
+
     while True:
-        r = requests.get(url)
+        r = requests.get(url) # TODO: ??? maybe logging
         r.encoding = 'utf-8'
         j = r.json()
-        #parsed_string = json.loads(j)
+
         for i in j['marketdata']['data']:
             if i[0] in stocks_name:
                 client.set(i[0], i[1])
         time.sleep(60)
-    return 
+    return
 
 if __name__ == '__main__':
     main()

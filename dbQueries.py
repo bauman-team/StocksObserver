@@ -2,6 +2,16 @@
 from typing import Dict, List, Tuple
 import sqlite3
 import requests
+import logging
+
+# Configure logging
+logger = logging.getLogger('dbQueries')
+logger.setLevel(logging.INFO)
+fileLogHandler = logging.FileHandler(filename='info.log', mode='a')
+fileLogHandler.setLevel(logging.INFO)
+logger.addHandler(fileLogHandler)
+formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s')
+fileLogHandler.setFormatter(formatter)
 
 url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,LAST'
 conn = sqlite3.connect('sqlite_python.db')
@@ -42,8 +52,9 @@ def AddUser(telegram_id: int):
     try:
         cursor.execute('INSERT INTO users (telegram_id) VALUES ({0});'.format(telegram_id))
         conn.commit()
-    except sqlite3.Error as error:
-        print("Ошибка, пользователь уже существует", error)
+        logger.info("Added new user!")
+    except sqlite3.Error as err:
+        logger.info("This user is exist!")
 
 def AddStock(stock_name: str):
     cursor.execute('INSERT INTO stocks (stock_name) VALUES (\'{0}\');'.format(stock_name))
@@ -53,9 +64,17 @@ def AddNotification(telegram_id: int, stock_name: str, target_value=0, notify_ti
     cursor.execute('INSERT INTO user_notifies (stock_name, telegram_id, target_value, notify_time) VALUES (\'{0}\', {1}, {2}, {3});'.format(stock_name, telegram_id, target_value, notify_time))
     conn.commit()
 
-
 def DropNotification(telegram_id: int, stock_name: str):
     cursor.execute('DELETE FROM user_notifies WHERE stock_name = \'{0}\' AND telegram_id = {1};'.format(stock_name, telegram_id))
+    conn.commit()
+
+def DropAllNotification(telegram_id: int):
+    cursor.execute('DELETE FROM user_notifies WHERE telegram_id = {0};'.format(telegram_id))
+    conn.commit()
+
+def DropUser(telegram_id: int):
+    DropAllNotification(telegram_id)
+    cursor.execute('DELETE FROM users WHERE telegram_id = {0};'.format(telegram_id))
     conn.commit()
 
 ### initiate DB
