@@ -21,6 +21,6 @@ def sub_to_notifications(user_id: int, raw_message: str):
         elif raw_message[0] == '-':
             DropNotification(user_id, stock[0])
             return "droped"
-        elif raw_message[0] == '?':
+        elif raw_message[0] == '?': # TODO: CREATE short information
             return stock[0]+" info"
     return "error msg"

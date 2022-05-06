@@ -4,3 +4,4 @@ sqlite_python.db
 .idea
 LSTM.ipynb
 .ipynb_checkpoints
+*.log

@@ -15,9 +15,29 @@ warnings.filterwarnings('ignore')
 stocks = fetchall('stocks', ['stock_name'])
 stocks_names = [i['stock_name'] for i in stocks]
 
+# Configure logging
+logger = logging.getLogger('stocksMonitorService')
+logger.setLevel(logging.INFO)
+fileLogHandler = logging.FileHandler(filename='info.log', mode='a')
+fileLogHandler.setLevel(logging.INFO)
+logger.addHandler(fileLogHandler)
+formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s')
+fileLogHandler.setFormatter(formatter)
+
+logger.info("Start logging")
+
 
 def main():
     client = base.Client(('127.0.0.1', 11211)) # TODO: add yml config
+    try:
+        client.get(".") # check memcached
+    except ConnectionRefusedError as err:
+        logger.fatal("Memcahed error refused connection!")
+        exit()
+    except Exception as err:
+        logger.fatal(err)
+        exit()
+
     model_ticker = "POSI"
     intr = 10
     lgs_num = 24
@@ -45,6 +65,15 @@ def main():
             print(inpit_data)
             print((curr_y, next_y, pred_time, rnd))
             client.set(stock_name, (curr_y, next_y, pred_time, rnd))
+        """
+        r = requests.get(url) # TODO: ??? maybe logging
+        r.encoding = 'utf-8'
+        j = r.json()
+
+        for i in j['marketdata']['data']:
+            if i[0] in stocks_name:
+                client.set(i[0], i[1])
+        time.sleep(60)"""
         time.sleep(60)  # for debug only
     return
 
