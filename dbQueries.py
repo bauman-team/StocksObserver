@@ -65,7 +65,8 @@ if __name__ == '__main__':
     j = r.json()
     CreateDB()
     for i in j['marketdata']['data']:
-        AddStock(i[0])
+        if i[1] != None:
+            AddStock(i[0])
 
 
 def insert(table: str, column_values: Dict):
