@@ -2,6 +2,10 @@ __pycache__/
 StockObserver/
 sqlite_python.db
 .idea
-LSTM.ipynb
+*.ipynb
 .ipynb_checkpoints
 *.log
+tests
+models_old
+datasets
+

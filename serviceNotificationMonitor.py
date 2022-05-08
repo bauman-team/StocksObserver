@@ -45,7 +45,10 @@ stocks = fetchall('stocks', ['stock_name'])
 stocks_names = [i['stock_name'] for i in stocks]
 # TODO: CREATE ? not working days (and StocksMonitor)
 
+
 async def main():
+    """for stock_name in stocks_names:
+        print(stock_name)"""
     init_time = time.time()
     client = base.Client(('127.0.0.1', 11211)) # TODO: CREATE add yml config
     try:
@@ -69,7 +72,7 @@ async def main():
                 pred_time = tup[2][2:-1]
                 rnd = int(tup[3])
                 pred_str = "РОСТ" if next_y > curr_y else "ПАДЕНИЕ"
-                print(stock_name, next_y, curr_y, pred_time)
+                print(stock_name, next_y, curr_y, pred_time, round((next_y - curr_y) / curr_y * 100, rnd))
                 for n in user_notifies:
                     if n['stock_name'] == stock_name:
                         await send_message(n['telegram_id'], f"Акция {n['stock_name']}\nТекущая цена: {curr_y} руб\nПрогноз на {pred_time}: {pred_str}\n[ {next_y} руб ({round((next_y - curr_y) / curr_y * 100, rnd)}%) ]")
