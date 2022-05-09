@@ -1,5 +1,5 @@
 - name: update repo - pull the latest changes
-  copy:
+  git:
     repo: "{{repo_git_url}}"
     dest: "{{app_work_dir}}"
     update: yes

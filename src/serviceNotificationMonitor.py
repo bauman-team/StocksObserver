@@ -13,7 +13,7 @@ from dbQueries import *
 from pymemcache.client import base
 import time
 
-API_TOKEN = os.getenv('TELTOKEN', 'NONE_KEY')
+API_TOKEN = os.environ['TELTOKEN']
 
 # Configure logging
 logger = logging.getLogger('telegramNotificationService')
