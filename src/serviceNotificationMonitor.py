@@ -18,7 +18,7 @@ API_TOKEN = os.getenv('TELTOKEN', 'NONE_KEY')
 # Configure logging
 logger = logging.getLogger('telegramNotificationService')
 logger.setLevel(logging.INFO)
-fileLogHandler = logging.FileHandler(filename='info.log', mode='a')
+fileLogHandler = logging.FileHandler(filename='../info.log', mode='a')
 fileLogHandler.setLevel(logging.INFO)
 logger.addHandler(fileLogHandler)
 formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s')

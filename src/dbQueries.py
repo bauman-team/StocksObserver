@@ -11,19 +11,19 @@ import datetime
 # Configure logging
 logger = logging.getLogger('dbQueries')
 logger.setLevel(logging.INFO)
-fileLogHandler = logging.FileHandler(filename='info.log', mode='a')
+fileLogHandler = logging.FileHandler(filename='../info.log', mode='a')
 fileLogHandler.setLevel(logging.INFO)
 logger.addHandler(fileLogHandler)
 formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s')
 fileLogHandler.setFormatter(formatter)
 
 url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,LAST'
-conn = sqlite3.connect('sqlite_python.db')
+conn = sqlite3.connect('../sqlite_python.db')
 cursor = conn.cursor()
 
 def CreateDB():
     try:
-        sqlite_connection = sqlite3.connect('sqlite_python.db')
+        sqlite_connection = sqlite3.connect('../sqlite_python.db')
         sqlite_create_table_users = '''CREATE TABLE users (
 	        			telegram_id INTEGER PRIMARY KEY);'''
         sqlite_create_table_stocks = '''CREATE TABLE stocks (stock_name VARCHAR(8) PRIMARY KEY);'''
