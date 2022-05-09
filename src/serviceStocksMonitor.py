@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from src.dbQueries import *
+from dbQueries import *
 import time
 import requests
 from pymemcache.client import base

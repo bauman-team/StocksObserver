@@ -7,7 +7,7 @@ from aiogram import Bot, Dispatcher, executor, types, utils
 from aiogram.dispatcher import filters
 
 from middlewares import *
-from src.messageHandler import *
+from messageHandler import *
 
 
 

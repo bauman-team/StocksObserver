@@ -8,12 +8,10 @@ from aiogram import Bot, Dispatcher, executor, types
 import aiogram
 
 from middlewares import *
-from src.messageHandler import *
-from src.dbQueries import *
+from messageHandler import *
+from dbQueries import *
 from pymemcache.client import base
 import time
-
-import src.dbQueries as dbQueries
 
 API_TOKEN = os.getenv('TELTOKEN', 'NONE_KEY')
 
