@@ -1,0 +1,10 @@
+---
+- hosts: "prod"
+
+  vars_files:
+    - ./group_vars/all/main.yml
+    - ./group_vars/all/secret.yml
+  roles:
+    - package-install
+    - code-deploy
+    - cron-configure

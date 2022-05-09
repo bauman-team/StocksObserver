@@ -1,0 +1,22 @@
+#!/bin/bash
+
+cd {{ app_work_dir }}
+
+if ! [[ `git log --pretty=%H ...refs/heads/master^` = `git ls-remote origin -h refs/heads/master |cut -f1` ]]; then
+    git pull
+    pip install -r requirements.txt
+
+    systemctl stop serviceTelegramBot
+    systemctl daemon-reload
+    systemctl start serviceTelegramBot
+
+    systemctl stop serviceStocksMonitor
+    systemctl daemon-reload
+    systemctl start serviceStocksMonitor
+
+    systemctl stop serviceNotificationMonitor
+    systemctl daemon-reload
+    systemctl start serviceNotificationMonitor
+    
+    date=$(date '+%d/%m/%Y %H:%M:%S');
+    echo "Updated local master branch at: $date"

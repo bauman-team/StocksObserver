@@ -1,0 +1,26 @@
+---
+- name: "Install git"
+  apt:
+    name: "git"
+    state: "latest"
+    update_cache: true
+- name: "Install sqlite3"
+  apt:
+    name: "sqlite3"
+    state: "latest"
+    update_cache: true
+- name: "Install memcached"
+  apt:
+    name: "memcached"
+    state: "latest"
+    update_cache: true
+- name: "Install cron"
+  apt:
+    name: "cron"
+    state: "latest"
+    update_cache: true
+- name: "Install python3.9.2"
+  apt:
+    name: "python3.9"
+    state: "present"
+    update_cache: true

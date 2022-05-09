@@ -1,0 +1,6 @@
+---
+# TODO: use this template
+services_names:
+  - "serviceTelegramBot.py"
+  - "serviceStocksMonitor.py"
+  - "serviceNotificationMonitor.py"

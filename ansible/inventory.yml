@@ -1,0 +1,8 @@
+all:
+  children:
+    prod:
+      vars:
+        env: "prod"
+      hosts:
+        "81.163.23.169" # TODO: CHANGE add to secret.yml
+        #roxana_port: "22"
