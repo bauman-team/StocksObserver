@@ -1,0 +1,4 @@
+---
+- include: "clone-repo.yml"
+- include: "update-requirements.yml"
+- include: "configure-services.yml"

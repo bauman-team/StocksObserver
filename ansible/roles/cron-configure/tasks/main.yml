@@ -1,0 +1,14 @@
+---
+- name: "cron configure file copy"
+  template:
+    src: "templates/cron-configure.sh.j2"
+    dest: "/bin/cron-configure.sh"
+
+- name: "cron configure file update exec mode"
+  command: "chmod +x /bin/cron-configure.sh"
+
+- name: "cron add script auto update git StocksObserverBot"
+  cron:
+    name: "check git StocksObserverBot updates"
+    minute: "*/2"
+    job: "exec /bin/cron-configure.sh"

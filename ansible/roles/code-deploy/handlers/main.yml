@@ -1,0 +1,17 @@
+- name: start telegram bot service
+  systemd:
+    name: serviceTelegramBot
+    state: started
+    enabled: yes
+
+- name: start stocks monitor service
+  systemd:
+    name: serviceStocksMonitor
+    state: started
+    enabled: yes
+
+- name: start notification monitor service
+  systemd:
+    name: serviceNotificationMonitor
+    state: started
+    enabled: yes
