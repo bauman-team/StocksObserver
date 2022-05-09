@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import logging
 
 import os
@@ -5,7 +7,7 @@ from aiogram import Bot, Dispatcher, executor, types, utils
 from aiogram.dispatcher import filters
 
 from middlewares import *
-from messageHandler import *
+from src.messageHandler import *
 
 
 

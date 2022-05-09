@@ -1,4 +1,6 @@
-from dbQueries import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from src.dbQueries import *
 
 stocks = fetchall('stocks', ['stock_name'])
 stocks_name = [i['stock_name'] for i in stocks]

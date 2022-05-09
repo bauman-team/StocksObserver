@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import logging
 import asyncio
 
@@ -6,12 +8,12 @@ from aiogram import Bot, Dispatcher, executor, types
 import aiogram
 
 from middlewares import *
-from messageHandler import *
-from dbQueries import *
+from src.messageHandler import *
+from src.dbQueries import *
 from pymemcache.client import base
 import time
 
-import dbQueries
+import src.dbQueries as dbQueries
 
 API_TOKEN = os.getenv('TELTOKEN', 'NONE_KEY')
 
