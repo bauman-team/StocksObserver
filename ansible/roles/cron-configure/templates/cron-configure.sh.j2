@@ -2,7 +2,8 @@
 
 cd {{ app_work_dir }}
 
-if ! [[ `git log --pretty=%H ...refs/heads/master^` = `git ls-remote origin -h refs/heads/master |cut -f1` ]]; then
+if ! [[ `git log --pretty=%H ...refs/heads/master^` = `git ls-remote origin -h refs/heads/master |cut -f1` ]]
+then
     git pull
     pip install -r requirements.txt
 
@@ -20,3 +21,4 @@ if ! [[ `git log --pretty=%H ...refs/heads/master^` = `git ls-remote origin -h r
     
     date=$(date '+%d/%m/%Y %H:%M:%S');
     echo "Updated local master branch at: $date"
+fi
