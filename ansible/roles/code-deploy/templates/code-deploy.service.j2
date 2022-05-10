@@ -8,6 +8,8 @@ After=memcached.service
 Type=simple
 User=root
 Environment=TELTOKEN={{ tel_token }}
+Environment=DBUSER={{ db_user }}
+Environment=DBPASSWORD={{ db_password }}
 WorkingDirectory={{ app_work_dir }}/src
 ExecStart=/usr/bin/python3 {{ app_work_dir }}/src/{{ service_name }}.py
 
