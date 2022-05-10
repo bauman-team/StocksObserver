@@ -1,6 +1,5 @@
 __pycache__/
 StockObserver/
-sqlite_python.db
 .idea
 *.ipynb
 .ipynb_checkpoints

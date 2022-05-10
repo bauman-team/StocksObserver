@@ -63,10 +63,10 @@ async def send_help(message: types.Message):
 @dp.message_handler(commands=['list'])
 async def send_monitoringList(message: types.Message):
     user_stocks = []
-    row = fetchall('user_notifies', ['stock_name', 'telegram_id', 'target_value', 'notify_time'])
+    row = fetchall('user_notifications', ['stock_name', 'telegram_id', 'target_value'])
     for i in row:
         if i['telegram_id'] == message.from_user.id:
-            user_stocks.append([i['stock_name'], i['target_value'], i['notify_time']])
+            user_stocks.append([i['stock_name'], i['target_value']])
     await message.answer(user_stocks, reply_markup=list_of_buttons)
 
 @dp.message_handler(commands=['clear'])
