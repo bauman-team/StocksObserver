@@ -1,17 +1,20 @@
 - name: start telegram bot service
   systemd:
+    daemon_reload: yes
     name: serviceTelegramBot
     state: started
     enabled: yes
 
 - name: start stocks monitor service
   systemd:
+    daemon_reload: yes
     name: serviceStocksMonitor
     state: started
     enabled: yes
 
 - name: start notification monitor service
   systemd:
+    daemon_reload: yes
     name: serviceNotificationMonitor
     state: started
     enabled: yes
