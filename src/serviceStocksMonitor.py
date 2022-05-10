@@ -159,18 +159,19 @@ def main():
         print(elem)
     time.sleep(600)"""
 
+    create_new_models(debug_info=False)
     need_create_models = True
     while True:
         if is_moex_work(datetime.datetime.today()):
             if need_create_models and datetime.datetime.now().time() >= datetime.time(18, 51):
-                create_new_models(debug_info=True)
+                create_new_models(debug_info=False)
                 need_create_models = False
-                make_predictions(client, debug_info=True)
+                make_predictions(client, debug_info=False)
             elif (datetime.datetime.now().time() > datetime.time(10, 10)) and (datetime.datetime.now().time() < datetime.time(18, 50)):
                 need_create_models = True
                 while datetime.datetime.now().minute % 10 != 1:
                     time.sleep(10)
-                make_predictions(client, debug_info=True)
+                make_predictions(client, debug_info=False)
         time.sleep(60)
         """
         r = requests.get(url) # TODO: ??? maybe logging
