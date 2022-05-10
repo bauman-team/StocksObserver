@@ -4,11 +4,15 @@ from typing import Dict, List, Tuple
 import sqlite3
 import requests
 import logging
+import pandas as pd
+import apimoex
+from dateutil.relativedelta import relativedelta
+import datetime
 
 # Configure logging
 logger = logging.getLogger('dbQueries')
 logger.setLevel(logging.INFO)
-fileLogHandler = logging.FileHandler(filename='info.log', mode='a')
+fileLogHandler = logging.FileHandler(filename='../info.log', mode='a')
 fileLogHandler.setLevel(logging.INFO)
 logger.addHandler(fileLogHandler)
 formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s')
@@ -84,8 +88,15 @@ if __name__ == '__main__':
     r.encoding = 'utf-8'
     j = r.json()
     CreateDB()
-    for i in j['marketdata']['data']:
-        AddStock(i[0])
+    start = (datetime.date.today() - relativedelta(months=1)).strftime('%Y-%m-%d')
+    with requests.Session() as session:
+        for i in j['marketdata']['data']:
+            if i[1] != None:
+                last_data = pd.DataFrame(
+                    apimoex.get_board_candles(session, security=i[0], interval=24, columns=("begin", "value"),
+                                              start=start))
+                if last_data['value'].min() > 10000000:
+                    AddStock(i[0])
 
 
 def insert(table: str, column_values: Dict):
