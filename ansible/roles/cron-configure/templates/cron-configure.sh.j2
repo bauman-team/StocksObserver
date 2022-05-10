@@ -2,7 +2,7 @@
 
 cd {{ app_work_dir }}
 
-if ! [[ `git log --pretty=%H ...refs/heads/master^` = `git ls-remote origin -h refs/heads/master | cut -f1` ]]
+if [[ `git rev-parse @` != `git ls-remote origin -h refs/heads/{{ repo_version }} | cut -f1` ]]
 then
     git pull
 
@@ -17,5 +17,5 @@ then
     systemctl restart serviceNotificationMonitor
     
     date=$(date '+%d/%m/%Y %H:%M:%S');
-    echo "Updated local master branch at: $date"
+    echo "Updated local {{ repo_version }} branch at: $date"
 fi

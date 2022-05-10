@@ -3,6 +3,6 @@
     repo: "{{repo_git_url}}"
     dest: "{{app_work_dir}}"
     update: yes
-    version: master
+    version: "{{repo_version}}"
     #accept_hostkey: yes
     #key_file: /home/{{current_user}}/.ssh/id_rsa

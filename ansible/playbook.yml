@@ -1,5 +1,6 @@
 ---
 - hosts: "prod"
+  become: yes
 
   vars_files:
     - ./group_vars/all/main.yml
