@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from dbQueries import *
 
 stocks = fetchall('stocks', ['stock_name'])

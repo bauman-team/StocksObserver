@@ -1,0 +1,32 @@
+---
+- name: telegram bot service unit install
+  vars:
+    service_name: "serviceTelegramBot"
+    service_description: "Telegram bot service"
+  template:
+    src: "templates/code-deploy.service.j2"
+    dest: "/lib/systemd/system/{{service_name}}.service"
+  notify:
+    - start telegram bot service
+
+
+- name: stocks monitor service unit install
+  vars:
+    service_name: "serviceStocksMonitor"
+    service_description: "Stocks monitor service"
+  template:
+    src: "templates/code-deploy.service.j2"
+    dest: "/lib/systemd/system/{{service_name}}.service"
+  notify:
+    - start stocks monitor service
+
+
+- name: notification monitor service unit install
+  vars:
+    service_name: "serviceNotificationMonitor"
+    service_description: "Notification monitor service"
+  template:
+    src: "templates/code-deploy.service.j2"
+    dest: "/lib/systemd/system/{{service_name}}.service"
+  notify:
+    - start notification monitor service

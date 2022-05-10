@@ -1,0 +1,3 @@
+---
+- name: update python3 requirements
+  command: "pip install -r {{app_work_dir}}/requirements.txt"

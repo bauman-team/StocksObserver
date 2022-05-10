@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import logging
 import asyncio
 
@@ -11,9 +13,7 @@ from dbQueries import *
 from pymemcache.client import base
 import time, datetime
 
-import dbQueries
-
-API_TOKEN = os.getenv('TELTOKEN', 'NONE_KEY')
+API_TOKEN = os.environ['TELTOKEN']
 
 # Configure logging
 logger = logging.getLogger('telegramNotificationService')

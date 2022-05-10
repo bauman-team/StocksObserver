@@ -1,0 +1,8 @@
+- name: update repo - pull the latest changes
+  git:
+    repo: "{{repo_git_url}}"
+    dest: "{{app_work_dir}}"
+    update: yes
+    version: master
+    #accept_hostkey: yes
+    #key_file: /home/{{current_user}}/.ssh/id_rsa

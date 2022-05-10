@@ -1,0 +1,19 @@
+[Unit]
+Description={{ service_description }}
+After=syslog.target
+After=network.target
+After=memcached.service
+
+[Service]
+Type=simple
+User=root
+Environment=TELTOKEN={{ tel_token }}
+WorkingDirectory={{ app_work_dir }}/src
+ExecStart=/usr/bin/python3 {{ app_work_dir }}/src/{{ service_name }}.py
+
+OOMScoreAdjust=-100
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
