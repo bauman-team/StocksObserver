@@ -34,8 +34,8 @@ fileLogHandler.setFormatter(formatter)
 
 logger.info("Start logging")
 
-model_path = "./models/"
-scaler_path = "./scalers/"
+model_path = "../models/"
+scaler_path = "../scalers/"
 
 def create_new_models(lags=20, epochs=10, debug_info=False):
     start_time = time.time()
