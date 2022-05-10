@@ -16,7 +16,7 @@ API_TOKEN = os.environ['TELTOKEN']
 # Configure logging
 logger = logging.getLogger('telegramBotHandlerService')
 logger.setLevel(logging.INFO)
-fileLogHandler = logging.FileHandler(filename='info.log', mode='a')
+fileLogHandler = logging.FileHandler(filename='../info.log', mode='a')
 fileLogHandler.setLevel(logging.INFO)
 logger.addHandler(fileLogHandler)
 formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s')
@@ -39,8 +39,10 @@ help_massage = utils.markdown.text(
     "Hi!",
     "I'm StocksObserverBot!\n",
     "To add a stock to monitoring:",
-    "+YNDX 3000 15",
-    "(here 3000 is the target value, and 15 is the period of automatic price notifications)\n",
+    "+YNDX\n",
+    "or\n",
+    "+YNDX 3000",
+    "(here 3000 is the target value)\n",
     "To delete a stock from monitoring:",
     "-YNDX\n",
     "You can also view a list of all the stocks added to the monitoring:",
@@ -48,6 +50,7 @@ help_massage = utils.markdown.text(
     "To clear notification list:",
     "/clear\n",
     "Powered by bauman-team.",
+    "version 1.0",
     sep="\n"
 )
 
@@ -63,10 +66,10 @@ async def send_help(message: types.Message):
 @dp.message_handler(commands=['list'])
 async def send_monitoringList(message: types.Message):
     user_stocks = []
-    row = fetchall('user_notifies', ['stock_name', 'telegram_id', 'target_value', 'notify_time'])
+    row = fetchall('user_notifications', ['stock_name', 'telegram_id', 'target_value'])
     for i in row:
         if i['telegram_id'] == message.from_user.id:
-            user_stocks.append([i['stock_name'], i['target_value'], i['notify_time']])
+            user_stocks.append([i['stock_name'], i['target_value']])
     await message.answer(user_stocks, reply_markup=list_of_buttons)
 
 @dp.message_handler(commands=['clear'])
