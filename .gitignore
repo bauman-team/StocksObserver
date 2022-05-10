@@ -8,4 +8,5 @@ sqlite_python.db
 tests
 models_old
 datasets
+venv
 
