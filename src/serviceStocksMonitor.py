@@ -37,7 +37,10 @@ logger.info("Start logging")
 model_path = "../models/"
 scaler_path = "../scalers/"
 
+
 def create_new_models(lags=20, epochs=10, debug_info=False):
+    if not os.path.exists(scaler_path):
+        os.makedirs(scaler_path)
     start_time = time.time()
     start_date = datetime.datetime.today() - relativedelta(years=1)
 
