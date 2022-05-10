@@ -9,4 +9,6 @@ tests
 models_old
 datasets
 venv
+models
+scalers
 
