@@ -1,13 +1,35 @@
-Телеграмм бот для отслеживания котировок акций
-1) Телеграмм бот должен предоставлять пользователю возможность поиска отслеживаемых акций по их короткому названию на бирже
-2) Пользователь должен иметь возможность подписываться на (отписываться от) рассылку(и) уведомлений об изменении цены на конкретную акцию
-3) Пользователь должен иметь возможность выбирать время периода уведомлений (10 и более минут)
-4) Пользователь должен иметь возможность установить целевую стоимость котировки, при достижении которой, пользователю должно прийти уведомление (in develop)
-5) Уведомления должны содержать напарвление изменения цены, саму цену (и базовую информацию об акции), отметку о достижении целевой цены при наличии таковой
+# Stocks Observer Bot
+
+<img src="https://github.com/bauman-team/StocksObserver/blob/master/docs/eng/img/bot_logo.png" align="right"
+     alt="Stocks Observer Bot" width="160" height="160">
+
+![][status-shield] ![][python-shield] ![][keras-framework-shield] ![][telegram-bot-api-shield] ![][moex-api-shield] ![][ansible-shield]
+
+
+Telegram bot for monitoring stock quotes. By the use StocksObserverBot you can:
+* Set up notifications on the target stock price
+* Set up notifications on the predict stock price
+    * predictions are available 30 minutes after the opening of the exchange
+    * predictions are made 30 minutes ahead
+    * predictions are made every 10 minutes
+* Available all volatile shares from the Moscow Exchange
+* Prediction accuracy is improving every day
 
 
 
 
-serviceTelegramBot (рассылка уведомлений и прием запросов на подписку)
-serviceStocksMonitor (взаимодействует с MOEX API, собирая информацию по акциям)
-serviceNotificationMonitor (ищет пользователей, которых надо уведомить и добавляет их в очередь на рассылку)
+
+
+
+[status-shield]:https://img.shields.io/badge/status-up-informational?style=flat&color=2bbc8a
+
+[python-shield]:https://img.shields.io/badge/Make%20with-Python-informational?style=flat&logo=python&logoColor=white&color=2bbc8a
+
+[keras-framework-shield]:https://img.shields.io/badge/Make%20with-framework%20Keras-informational?style=flat&logo=keras&logoColor=red&color=2bbc8a
+
+[telegram-bot-api-shield]:https://img.shields.io/badge/Make%20with-Telegram%20Bot%20API-informational?style=flat&logo=telegram&logoColor=white&color=2bbc8a
+
+[moex-api-shield]:https://img.shields.io/badge/Make%20with-MOEX%20API-informational?style=flat&logo=data:image/svg%2bxml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+CjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIzMnB4IiBoZWlnaHQ9IjMycHgiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMzIgMzIiIHhtbDpzcGFjZT0icHJlc2VydmUiPiAgPGltYWdlIGlkPSJpbWFnZTAiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgeD0iMCIgeT0iMCIKICAgIGhyZWY9ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBQ0FBQUFBZ0NBTUFBQUJFcElyR0FBQUFCR2RCVFVFQUFMR1BDL3hoQlFBQUFDQmpTRkpOCkFBQjZKZ0FBZ0lRQUFQb0FBQUNBNkFBQWRUQUFBT3BnQUFBNm1BQUFGM0NjdWxFOEFBQUJnMUJNVkVYRUdqTEVIRFRFR3pQRUdUSEQKRkMzQ0VTckVGaS9MTlVyQ0VpdkRGaTdNTmt2REV5ekVGaTdQUVZYdHVMLzg4ZlBZWkhUQkN5VEJEQ1hmZ28vODgvVG9wSzdMTTBuRApFaXZQUTFmKyt2ci8vLy8rKy92WVkzVEJDeVhmZjQzNjYrM0pMVVBFRlM3Q0VDblRVV1RYWTNUZmdJMysrL3pNTjB2U1QyTDc3L0gvCi9QellZblBCRFNmZmdwRDc4UEg5OS9qamtKdmtrNTcvK2ZyMnpOVFBPbERlZll2ZGQ0WHFyTFhpanBxL0JCN21tS1A1MWR6cWw2YncKdXNUZ2dvKytBUnpzc3Jyams1N0FDU1BZV203eHZNYi8vLzdDRGlmc3M3dmprcDNmZ1kvd3VNTFBPMUhCRFNiQ0R5amprSnk5QUJuZwpocFB4dXNUcWxxWFpaM2UrQVJ2aGlaWGRkNGJlZTRuWFdHejUxZHYvK3Z2Ly9mM1dYbS9xcWJMNDR1WEFDaVRsbHFIKytQbjU1dW5UClVtWGVmb3ZFRnpEbW5LYi8vUDNNTjB6T1AxVDk5ZmJlZklyRUZ5L21tNmI1NU9mSktrRE9QVkh2d01mLy92N0NEeW5tbXFYLy92L0sKTGtUREZTN0ZHelBSU2wzREZDekZHakxFR3pMRUdEREVHVExFR0RIQ0VpcFIrWWRJQUFBQUFXSkxSMFFhZFdma01nQUFBQWQwU1UxRgpCK1lGQ2hBaUtWS3lRQmNBQUFFaFNVUkJWRGpMWTJEQUR4Z1pCbDRCRXpWTllHYkJ4a1NZd01yR3pnR1Q1K1JpNVVaWHdNUEx4eThnCkNKRVhFaFlSRldORHRVSmNRbEpLU2xvR3BJSlpWazVLU2twZVFSSEZCQ1Zsb0tDVXRJb3NVTDhxaUttbXpvS3FRRU5LU2xOS1NrdGIKUjBnWEtLMG5wYytPcWNEQVVNckkyTVFVS0c5bWpsV0JoYVdWdFkwdFVON08zZ0dyQWtjbmNXY1hLU2xYVXlFM2Q2d0tQQVFGUFlINgp2Yng5ZkxFcjhQTVBBTW9IQmhrSGgyQlhFQm9HbEErUGlJeUtqb25GcWlBT0tDOFhMNTRnSlpXWWhLa2dHUlE2VWlsQ3pLbXNhU0JXCmVnYXFBdkhNTEtCb3Rpd3pBME9PVWk2UW1aZlBneHBaTEFXRlJhWWdlYUNLNHBKUzg3Snk5UFRBV2xGWnhReGg1bFJYY25QWFlLU28KV3RZNkdMTytnWm1jSkljZDBNRUVLaWdBQU9ya01PUmR1d243QUFBQUpYUkZXSFJrWVhSbE9tTnlaV0YwWlFBeU1ESXlMVEExTFRFdwpWREV6T2pNME9qUXhLekF6T2pBd0c2UUk2QUFBQUNWMFJWaDBaR0YwWlRwdGIyUnBabmtBTWpBeU1pMHdOUzB4TUZReE16b3pORG8wCk1Tc3dNem93TUdyNXNGUUFBQUFBU1VWT1JLNUNZSUk9IiAvPgo8L3N2Zz4K&logoColor=white&color=2bbc8a
+
+[ansible-shield]:https://img.shields.io/badge/Deploy-ansible-informational?style=flat&logo=ansible&logoColor=white&color=2bbc8a
+
