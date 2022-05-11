@@ -91,7 +91,7 @@ if __name__ == '__main__':
     start = (datetime.date.today() - relativedelta(months=1)).strftime('%Y-%m-%d')
     with requests.Session() as session:
         for i in j['marketdata']['data']:
-            if i[1] != None:
+            if (i[1] != None) and (i[0] not in ['TRNFP', 'LNZL', 'AKRN', 'BELU', 'BANEP', 'SMLT', 'CBOM']):
                 last_data = pd.DataFrame(
                     apimoex.get_board_candles(session, security=i[0], interval=24, columns=("begin", "value"),
                                               start=start))
