@@ -1,3 +1,7 @@
 ---
 - name: update python3 requirements
   command: "pip install --no-cache-dir -r {{app_work_dir}}/requirements.txt"
+
+#- name: update db
+#  command: "python3 {{app_work_dir}}/src/dbQueries.py" # TODO: FIX
+

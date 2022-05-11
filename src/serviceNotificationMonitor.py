@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-import asyncio
 
 import os
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import Bot, executor
 import aiogram
 
 from middlewares import *
 from messageHandler import *
 from dbQueries import *
 from pymemcache.client import base
-import time, datetime
+import time
 
 API_TOKEN = os.environ['TELTOKEN']
 
@@ -61,7 +60,7 @@ async def main():
         exit()
         
     while True:
-        user_notifies = fetchall('user_notifies', ['stock_name', 'telegram_id', 'target_value', 'notify_time'])
+        user_notifies = fetchall('user_notifications', ['stock_name', 'telegram_id', 'target_value'])
         for stock_name in stocks_names:
             value = client.get(stock_name)
             if value != None:
