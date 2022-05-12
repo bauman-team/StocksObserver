@@ -1,24 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from dbQueries import *
+from pymemcache.client import base
+from pymemcache import MemcacheError
 
 stocks = fetchall('stocks', ['stock_name'])
 stocks_name = [i['stock_name'] for i in stocks]
 
 def sub_to_notifications(user_id: int, raw_message: str):
-    stock = raw_message[1:].split(' ')
-    if stock[0] in stocks_name:
-        if len(stock) >= 1 and raw_message[0] == '+':
-            DropNotification(user_id, stock[0]) # TODO: delete
+    client = base.Client(('127.0.0.1', 11211)) # TODO: CREATE add yml config
+    # no ping memcached because it used 
+    message = raw_message.split(' ')
+    stock_name = message[0][1:] if message[0][0] in "+-" else message[0]
+    if stock_name in stocks_name:
+        if raw_message[0] == '+':
             try:
-                stock[1] = int(stock[1])
-                AddNotification(user_id, stock[0], stock[1]) # TODO: CREATE 4 param (grow?)
-            except Exception as err:
-                AddNotification(user_id, stock[0])
+                message[1] = float(message[1].replace(',','.'))
+                try:
+                    curr_value = float(client.get(stock_name+"_curr").decode())
+                    AddNotification(user_id, stock_name, message[1], curr_value < message[1])
+                except Exception:
+                    return "service isn't working"
+            except Exception:
+                AddNotification(user_id, stock_name)
             return "added"
         elif raw_message[0] == '-':
-            DropNotification(user_id, stock[0])
+            try:
+                message[1] = float(message[1].replace(',','.'))
+                DropNotification(user_id, stock_name, False, message[1])
+            except Exception:
+                DropNotification(user_id, stock_name, True)
             return "droped"
-        elif raw_message[0] == '?': # TODO: CREATE short information
-            return stock[0]+" info"
+        else: # TODO: CREATE short information
+            try:
+                curr_value = float(client.get(stock_name+"_curr").decode())
+                return f"Акция {stock_name}\nТекущая цена: {curr_value} руб"
+            except Exception:
+                return "service isn't working"
     return "error msg"

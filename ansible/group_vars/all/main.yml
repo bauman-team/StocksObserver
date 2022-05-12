@@ -1,4 +1,4 @@
 ---
 repo_git_url: "https://github.com/bauman-team/StocksObserver.git"
 app_work_dir: "/StocksObserverBot"
-repo_version: "feature/TargetPriceHandler"
+repo_version: "master"
