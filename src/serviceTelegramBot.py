@@ -39,8 +39,8 @@ help_massage = utils.markdown.text(
     "Hi!",
     "I'm StocksObserverBot!\n",
     "To add a stock to monitoring:",
-    "+YNDX\n",
-    "or\n",
+    "+YNDX",
+    "or",
     "+YNDX 3000",
     "(here 3000 is the target value)\n",
     "To delete a stock from monitoring:",
@@ -50,7 +50,7 @@ help_massage = utils.markdown.text(
     "To clear notification list:",
     "/clear\n",
     "Powered by bauman-team.",
-    "version 1.0",
+    "version 0.9",
     sep="\n"
 )
 
