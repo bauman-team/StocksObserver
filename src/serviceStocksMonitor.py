@@ -83,55 +83,42 @@ def scanning_price(client):
                 client.set(i[0] + "_curr", i[1])
         time.sleep(1 - datetime.datetime.now().microsecond / 1000000)
 
-def create_new_models(lags=20, epochs=10, debug_info=False):
+def create_new_model(stock_name, lags=20, epochs=10, debug_info=False):
     if not os.path.exists(scaler_path):
         os.makedirs(scaler_path)
-    start_time = time.time()
+
     start_date = datetime.datetime.today() - relativedelta(years=1)
-
     with requests.Session() as session:
-        for stock_name in stocks_names:
-            data = pd.DataFrame(
-                apimoex.get_board_candles(session, security=stock_name, interval=10, columns=('begin', 'close'),
-                                          start=start_date))
-            rng = range(2 + (data.shape[0] % 3), data.shape[0], 3)
-            data = data.iloc[rng]
+        data = pd.DataFrame(
+            apimoex.get_board_candles(session, security=stock_name, interval=10, columns=('begin', 'close'),
+                                      start=start_date))
+        rng = range(2 + (data.shape[0] % 3), data.shape[0], 3)
+        data = data.iloc[rng]
 
-            if debug_info:
-                curr_time = time.time()
-                diff_min = str(int((curr_time - start_time) / 60))
-                diff_sec = str(int(curr_time - start_time) % 60)
-                time_str = diff_min + ":" + ("0" if len(diff_sec) == 1 else "") + diff_sec
-                print(f"{time_str}  received {stock_name} data")
+        scaler = MinMaxScaler()
+        scaler.fit(data['close'].values.reshape(-1, 1))
+        scaled_data = pd.Series(scaler.transform(data['close'].values.reshape(-1, 1)).flatten())
 
-            scaler = MinMaxScaler()
-            scaler.fit(data['close'].values.reshape(-1, 1))
-            scaled_data = pd.Series(scaler.transform(data['close'].values.reshape(-1, 1)).flatten())
+        x_data = list()
+        y_data = list()
+        for i in range(0, scaled_data.shape[0] - lags):
+            x_data.append(scaled_data[i:i + lags])
+            y_data.append(scaled_data[i + lags])
+        x_data = np.array(x_data).reshape(len(x_data), lags, 1)
+        y_data = np.array(y_data).reshape(-1, 1)
 
-            x_data = list()
-            y_data = list()
-            for i in range(0, scaled_data.shape[0] - lags):
-                x_data.append(scaled_data[i:i + lags])
-                y_data.append(scaled_data[i + lags])
-            x_data = np.array(x_data).reshape(len(x_data), lags, 1)
-            y_data = np.array(y_data).reshape(-1, 1)
+        model = Sequential()
+        model.add(LSTM(units=60, input_shape=(lags, 1), return_sequences=True))
+        model.add(LSTM(units=50, input_shape=(lags, 1), return_sequences=False))
+        model.add(Dense(units=1))
+        model.compile(optimizer='adam', loss='mean_absolute_error')
+        history = model.fit(x_data, y_data, batch_size=200, epochs=epochs, verbose=0)
 
-            model = Sequential()
-            model.add(LSTM(units=60, input_shape=(lags, 1), return_sequences=True))
-            model.add(LSTM(units=50, input_shape=(lags, 1), return_sequences=False))
-            model.add(Dense(units=1))
-            model.compile(optimizer='adam', loss='mean_absolute_error')
-            history = model.fit(x_data, y_data, batch_size=200, epochs=epochs, verbose=0)
+        model.save(f"{model_path}{stock_name}.h5")
+        joblib.dump(scaler, f"{scaler_path}{stock_name}.save")
 
-            model.save(f"{model_path}{stock_name}.h5")
-            joblib.dump(scaler, f"{scaler_path}{stock_name}.save")
-
-            if debug_info:
-                curr_time = time.time()
-                diff_min = str(int((curr_time - start_time) / 60))
-                diff_sec = str(int(curr_time - start_time) % 60)
-                time_str = diff_min + ":" + ("0" if len(diff_sec) == 1 else "") + diff_sec
-                print(f"{time_str}  created model for {stock_name}")
+        if debug_info:
+            print(f"Created model for {stock_name}")
 
 def make_predictions(client, debug_info=False):
     if debug_info:
@@ -150,23 +137,12 @@ def make_predictions(client, debug_info=False):
                 time.sleep(1)
                 last_data = pd.DataFrame(
                     apimoex.get_board_candles(session, security=stock_name, interval=10, start=start))
-        """if is_first:
-            rng = range(last_data.shape[0] + 2 - lgs_num * 3, last_data.shape[0], 3)
-        else:
-            rng = range(last_data.shape[0] + 1 - lgs_num * 3, last_data.shape[0] - 1, 3)"""
+
         rng = range(last_data.shape[0] + 1 - lgs_num * 3, last_data.shape[0] - 1, 3)
         input_data = np.array([last_data.iloc[i]['close'] for i in rng]).reshape(-1, 1)
         last_real_x = np.array(scaler.transform(input_data)).reshape(1, lgs_num, 1)
         next_y = round(scaler.inverse_transform(model.predict(last_real_x))[0][0], rnd)
         curr_y = last_data.iloc[-1]['close']
-        """if is_first:
-            pred_date = datetime.date.today() + datetime.timedelta(days=1)
-            while not is_moex_work(pred_date):
-                pred_date += datetime.timedelta(days=1)
-            pred_time = datetime.datetime(pred_date.year, pred_date.month, pred_date.day, 10).strftime("%H:%M %d.%m.%y")
-        else:
-            pred_time = (datetime.datetime.strptime(last_data.iloc[-1]['begin'], "%Y-%m-%d %H:%M:%S") +
-                     relativedelta(minutes=30)).strftime("%H:%M %d.%m.%y")"""
         pred_time = (datetime.datetime.strptime(last_data.iloc[-1]['begin'], "%Y-%m-%d %H:%M:%S") +
                      relativedelta(minutes=30)).strftime("%H:%M %d.%m.%y")
         client.set(stock_name, (curr_y, next_y, pred_time, rnd))
@@ -208,38 +184,49 @@ def main():
         logger.fatal(err)
         exit()
 
-    """min_values = {}
-    with requests.Session() as session:
-        start = (datetime.date.today() - relativedelta(months=1)).strftime('%Y-%m-%d')
-        for stock_name in stocks_names:
-            last_data = pd.DataFrame(apimoex.get_board_candles(session, security=stock_name, interval=24, columns=("begin", "value"), start=start))
-            min_values[stock_name] = last_data['value'].min()
-    sorted_dict = dict(sorted(min_values.items(), key=lambda x: x[1]))
-    for elem in sorted_dict.items():
-        print(elem)
-    time.sleep(600)"""
-
     scan_thread = Thread(target=scanning_price, args=(client,))
     scan_thread.start()
     time.sleep(1)
     stat_thread = Thread(target=save_stat, args=(client,))
     stat_thread.start()
 
-    # create_new_models(debug_info=False)
-    need_create_models = True
     while True:
+        models_update_if_necessary()
         if is_moex_work(datetime.datetime.today()):
-            if need_create_models and datetime.datetime.now().time() >= datetime.time(18, 51):
-                create_new_models(debug_info=False)
-                need_create_models = False
-                make_predictions(client, debug_info=True)
-            elif (datetime.datetime.now().time() > datetime.time(10, 10)) and (datetime.datetime.now().time() < datetime.time(18, 22)):
-                need_create_models = True
+            if (datetime.datetime.now().time() > datetime.time(10, 10)) and (datetime.datetime.now().time() < datetime.time(18, 22)):
                 while datetime.datetime.now().minute % 10 != 1:
                     time.sleep(1)
                 make_predictions(client, debug_info=True)
         time.sleep(60)
     return
+
+def need_update_model(stock_name):
+    if (not os.path.exists(f"{model_path}{stock_name}.h5")) or (not os.path.exists(f"{scaler_path}{stock_name}.save")):
+        return True
+
+    last_modify_model = datetime.datetime.fromtimestamp(os.path.getmtime(f"{model_path}{stock_name}.h5"))
+    last_modify_scaler = datetime.datetime.fromtimestamp(os.path.getmtime(f"{scaler_path}{stock_name}.save"))
+    last_modify = min(last_modify_model, last_modify_scaler)
+    now_datetime = datetime.datetime.now()
+
+    temp_date = last_modify.date() + relativedelta(days=1)
+    while temp_date < now_datetime.date():
+        if is_moex_work(temp_date):
+            return True
+        temp_date += relativedelta(days=1)
+
+    work_last = is_moex_work(last_modify)
+    work_now = is_moex_work(now_datetime)
+
+    if (last_modify.date() == now_datetime.date()) and work_now:
+        return last_modify.time() < datetime.time(18, 51) and now_datetime.time() >= datetime.time(18, 51)
+
+    return (work_last and (last_modify.time() < datetime.time(18, 51))) or (work_now and (now_datetime.time() >= datetime.time(18, 51)))
+
+def models_update_if_necessary():
+    for stock_name in stocks_names:
+        if need_update_model(stock_name):
+            create_new_model(stock_name, debug_info=True)
 
 if __name__ == '__main__':
     main()

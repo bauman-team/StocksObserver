@@ -92,16 +92,21 @@ def DropUser(telegram_id: int):
     cursor.execute('DELETE FROM users WHERE telegram_id = {0};'.format(telegram_id))
     conn.commit()
 
+def DropStocks():
+    cursor.execute('DELETE FROM stocks')
+    conn.commit()
+
 ### initiate DB
 if __name__ == '__main__':
     r = requests.get(url)
     r.encoding = 'utf-8'
     j = r.json()
     CreateDB()
+    DropStocks()
     start = (datetime.date.today() - relativedelta(months=1)).strftime('%Y-%m-%d')
     with requests.Session() as session:
         for i in j['marketdata']['data']:
-            if (i[1] != None) and (i[0] not in ['TRNFP', 'LNZL', 'AKRN', 'BELU', 'BANEP', 'SMLT', 'CBOM']):
+            if (i[1] != None) and (i[0] not in ['TRNFP', 'LNZL', 'AKRN', 'BELU', 'BANEP', 'SMLT', 'CBOM', 'ENPG', 'FESH', 'GCHE']):
                 last_data = pd.DataFrame(
                     apimoex.get_board_candles(session, security=i[0], interval=24, columns=("begin", "value"),
                                               start=start))
