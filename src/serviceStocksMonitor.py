@@ -18,6 +18,7 @@ from dateutil.relativedelta import relativedelta
 from sklearn.preprocessing import MinMaxScaler
 import xmltodict
 import logging
+from threading import Thread
 
 
 stocks = fetchall('stocks', ['stock_name'])
@@ -34,9 +35,53 @@ fileLogHandler.setFormatter(formatter)
 
 logger.info("Start logging")
 
+stat_logger = logging.getLogger('statistics')
+stat_logger.setLevel(logging.INFO)
+stat_file_handler = logging.FileHandler(filename='../statistics.log', mode='a')
+stat_file_handler.setLevel(logging.INFO)
+stat_logger.addHandler(stat_file_handler)
+formatter = logging.Formatter('%(message)s')
+stat_file_handler.setFormatter(formatter)
+stat_map = {}
 model_path = "../models/"
 scaler_path = "../scalers/"
 
+url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,LAST'
+
+
+def save_stat(client):
+    while True:
+        if (datetime.datetime.now().time() > datetime.time(10, 30)) and (datetime.datetime.now().time() <= datetime.time(18, 50)):
+            while datetime.datetime.now().minute % 10 != 0:
+                time.sleep((9 - datetime.datetime.now().minute % 10) * 60 + (59 - datetime.datetime.now().second) + (1 - datetime.datetime.now().microsecond / 1000000))
+            pred_time = datetime.datetime.now().strftime("%H:%M %d.%m.%y")
+            print("-----------------")
+            print(pred_time)
+            print(stat_map)
+            print("-----------------")
+            curr_prices = {}
+            if pred_time in stat_map:
+                for stock_name in stocks_names:
+                    curr_prices[stock_name] = float(client.get(stock_name + "_curr").decode())
+                stat_logger.info(f"{pred_time}")
+                for stock_name in stocks_names:
+                    init, pred = stat_map[datetime.datetime.now().strftime("%H:%M %d.%m.%y")][stock_name]
+                    real = curr_prices[stock_name]
+                    is_right = int((pred - init) * (real - init) > 0)
+                    log_string = f"{stock_name}: init={init} real={real} pred={pred} is_right={is_right}"
+                    stat_logger.info(log_string)
+                del stat_map[pred_time]
+        time.sleep(60)
+
+def scanning_price(client):
+    while True:
+        r = requests.get(url)
+        r.encoding = 'utf-8'
+        j = r.json()
+        for i in j['marketdata']['data']:
+            if i[0] in stocks_names:
+                client.set(i[0] + "_curr", i[1])
+        time.sleep(1 - datetime.datetime.now().microsecond / 1000000)
 
 def create_new_models(lags=20, epochs=10, debug_info=False):
     if not os.path.exists(scaler_path):
@@ -99,6 +144,12 @@ def make_predictions(client, debug_info=False):
         lgs_num = model.input_shape[1]
         with requests.Session() as session:
             last_data = pd.DataFrame(apimoex.get_board_candles(session, security=stock_name, interval=10, start=start))
+            while (datetime.datetime.strptime(last_data.iloc[-1]['begin'], "%Y-%m-%d %H:%M:%S") + relativedelta(
+                    minutes=10)) < datetime.datetime.now():
+                print(f"Свеча для {stock_name} ещё не пришла")
+                time.sleep(1)
+                last_data = pd.DataFrame(
+                    apimoex.get_board_candles(session, security=stock_name, interval=10, start=start))
         """if is_first:
             rng = range(last_data.shape[0] + 2 - lgs_num * 3, last_data.shape[0], 3)
         else:
@@ -120,8 +171,14 @@ def make_predictions(client, debug_info=False):
                      relativedelta(minutes=30)).strftime("%H:%M %d.%m.%y")
         client.set(stock_name, (curr_y, next_y, pred_time, rnd))
 
+        print(pred_time, stat_map.keys())
+        if pred_time not in stat_map.keys():
+            stat_map[pred_time] = {}
+        stat_map[pred_time][stock_name] = (curr_y, next_y)
+
         if debug_info:
             print(counter, stock_name, (curr_y, next_y, pred_time, rnd))
+            print()
             counter += 1
     if debug_info:
         print('All predicted')
@@ -162,29 +219,26 @@ def main():
         print(elem)
     time.sleep(600)"""
 
-    create_new_models(debug_info=False)
+    scan_thread = Thread(target=scanning_price, args=(client,))
+    scan_thread.start()
+    time.sleep(1)
+    stat_thread = Thread(target=save_stat, args=(client,))
+    stat_thread.start()
+
+    # create_new_models(debug_info=False)
     need_create_models = True
     while True:
         if is_moex_work(datetime.datetime.today()):
             if need_create_models and datetime.datetime.now().time() >= datetime.time(18, 51):
                 create_new_models(debug_info=False)
                 need_create_models = False
-                make_predictions(client, debug_info=False)
-            elif (datetime.datetime.now().time() > datetime.time(10, 10)) and (datetime.datetime.now().time() < datetime.time(18, 50)):
+                make_predictions(client, debug_info=True)
+            elif (datetime.datetime.now().time() > datetime.time(10, 10)) and (datetime.datetime.now().time() < datetime.time(18, 22)):
                 need_create_models = True
                 while datetime.datetime.now().minute % 10 != 1:
-                    time.sleep(10)
-                make_predictions(client, debug_info=False)
+                    time.sleep(1)
+                make_predictions(client, debug_info=True)
         time.sleep(60)
-        """
-        r = requests.get(url) # TODO: ??? maybe logging
-        r.encoding = 'utf-8'
-        j = r.json()
-
-        for i in j['marketdata']['data']:
-            if i[0] in stocks_name:
-                client.set(i[0], i[1])
-        time.sleep(60)"""
     return
 
 if __name__ == '__main__':
