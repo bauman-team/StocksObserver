@@ -37,7 +37,7 @@ async def send_message(user_id, msg):
         logger.info("Bot was blocked by user!") # TODO: drop row in the DB
     except Exception as err:
         logger.fatal(err)
-        exit()
+        exit(1)
 
 # TODO: CREATE handler target price
 
@@ -55,11 +55,8 @@ async def main():
         client.get(".") # check memcached
     except MemcacheError as err:
         logger.fatal("Memcahed error refused connection!")
-        exit()
-    except Exception as err: # TODO: ??? delete
-        logger.fatal(err)
-        exit()
-        
+        exit(1)
+
     while True:
         user_target_notifies = fetchall('user_notifications', ['id', 'stock_name', 'telegram_id', 'target_value', 'target_grow'])
         user_notifies = fetchall_unique('user_notifications', ['stock_name', 'telegram_id'])

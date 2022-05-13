@@ -66,10 +66,11 @@ def CreateDB():
 def AddUser(telegram_id: int):
     try:
         cursor.execute('INSERT INTO users (telegram_id) VALUES ({0})'.format(telegram_id))
-        conn.commit()
         logger.info("Added new user!")
     except psycopg2.Error as err:
         logger.info("This user is exist!")
+    finally:
+        conn.commit()
 
 def AddStock(stock_name: str):
     cursor.execute('INSERT INTO stocks (stock_name) VALUES (\'{0}\')'.format(stock_name))
