@@ -180,10 +180,21 @@ def main():
         client.get(".") # check memcached
     except MemcacheError as err:
         logger.fatal("Memcahed error refused connection!")
-        exit()
-    except Exception as err: # TODO: ??? delete
-        logger.fatal(err)
-        exit()
+        exit(1)
+
+    try:
+        with open("../list_of_monitoring_stocks.txt", "r") as f:
+            raw_text = f.read()
+            for i in raw_text.split('\n'):
+                if i != '':
+                    try:
+                        AddStock(i)
+                        logger.info(f"Added new stock to monitoring: {i}")
+                    except Exception:
+                        continue
+        logger.info("Stocks list up to date.")
+    except Exception:
+        logger.error("Error, not found file with list of monitoring stocks!")
 
     scan_thread = Thread(target=scanning_price, args=(client,))
     scan_thread.start()

@@ -10,15 +10,6 @@ from aiogram.types import InputFile
 from middlewares import *
 from messageHandler import *
 
-admins_ids_map = []
-with open("../admins.txt", "r") as f:
-    raw_text = f.read()
-    for i in raw_text.split('\n'):
-        try:
-            admins_ids_map.append(int(i))
-        except Exception:
-            continue
-
 API_TOKEN = os.environ['TELTOKEN']
 
 # Configure logging
@@ -31,6 +22,19 @@ formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s
 fileLogHandler.setFormatter(formatter)
 
 logger.info("Start logging")
+
+# Initialize list of admins
+admins_ids_map = []
+try:
+    with open("../admins.txt", "r") as f:
+        raw_text = f.read()
+        for i in raw_text.split('\n'):
+            try:
+                admins_ids_map.append(int(i))
+            except Exception:
+                continue
+except Exception:
+    logger.error("Admins file is not exist!")
 
 # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
