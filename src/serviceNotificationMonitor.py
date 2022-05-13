@@ -10,6 +10,7 @@ from middlewares import *
 from messageHandler import *
 from dbQueries import *
 from pymemcache.client import base
+from pymemcache import MemcacheError
 import time
 
 API_TOKEN = os.environ['TELTOKEN']
@@ -52,15 +53,16 @@ async def main():
     client = base.Client(('127.0.0.1', 11211)) # TODO: CREATE add yml config
     try:
         client.get(".") # check memcached
-    except ConnectionRefusedError as err:
+    except MemcacheError as err:
         logger.fatal("Memcahed error refused connection!")
         exit()
-    except Exception as err:
+    except Exception as err: # TODO: ??? delete
         logger.fatal(err)
         exit()
         
     while True:
-        user_notifies = fetchall('user_notifications', ['stock_name', 'telegram_id', 'target_value'])
+        user_target_notifies = fetchall('user_notifications', ['id', 'stock_name', 'telegram_id', 'target_value', 'target_grow'])
+        user_notifies = fetchall_unique('user_notifications', ['stock_name', 'telegram_id'])
         for stock_name in stocks_names:
             value = client.get(stock_name)
             if value != None:
@@ -76,11 +78,18 @@ async def main():
                     if n['stock_name'] == stock_name:
                         await send_message(n['telegram_id'], f"Акция {n['stock_name']}\nТекущая цена: {curr_y} руб\nПрогноз на {pred_time}: {pred_str}\n[ {next_y} руб ({round((next_y - curr_y) / curr_y * 100, rnd)}%) ]")
                 client.delete(stock_name)
+            curr_value = client.get(stock_name+"_curr")
+            if curr_value != None:
+                curr_value = float(curr_value.decode())
+                for n in user_target_notifies:
+                    if n['stock_name'] == stock_name and (n['target_value'] <= curr_value and n['target_grow'] or n['target_value'] >= curr_value and not n['target_grow']):
+                        delete('user_notifications', n['id'])
+                        await send_message(n['telegram_id'], f"Акция {n['stock_name']} достигла целевой цены: {n['target_value']} руб")
         time.sleep(1)
     await bot.session.close()
     
 
 if __name__ == '__main__':
-    executor.asyncio.run(main()) # TODO: fix closing error
+    executor.asyncio.run(main()) # TODO: FIX closing error
     
     
