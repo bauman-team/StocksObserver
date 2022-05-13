@@ -73,8 +73,10 @@ def AddUser(telegram_id: int):
         conn.commit()
 
 def AddStock(stock_name: str):
-    cursor.execute('INSERT INTO stocks (stock_name) VALUES (\'{0}\')'.format(stock_name))
-    conn.commit()
+    try:
+        cursor.execute('INSERT INTO stocks (stock_name) VALUES (\'{0}\')'.format(stock_name))
+    finally:
+        conn.commit()
 
 def AddNotification(telegram_id: int, stock_name: str, target_value=0., target_grow=False):
     cursor.execute("INSERT INTO user_notifications (stock_name, telegram_id, target_value, target_grow) VALUES ('{0}', {1}, {2}, {3})".format(stock_name, telegram_id, target_value, target_grow))
