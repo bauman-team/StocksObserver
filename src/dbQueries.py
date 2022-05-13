@@ -104,18 +104,17 @@ if __name__ == '__main__':
     r = requests.get(url)
     r.encoding = 'utf-8'
     j = r.json()
-    CreateDB()
+    CreateDB() 
     DropStocks()
-    start = (datetime.date.today() - relativedelta(months=1)).strftime('%Y-%m-%d')
-    with requests.Session() as session:
-        for i in j['marketdata']['data']:
-            if (i[1] != None) and (i[0] not in ['TRNFP', 'LNZL', 'AKRN', 'BELU', 'BANEP', 'SMLT', 'CBOM', 'ENPG', 'FESH', 'GCHE']):
-                last_data = pd.DataFrame(
-                    apimoex.get_board_candles(session, security=i[0], interval=24, columns=("begin", "value"),
-                                              start=start))
-                if last_data['value'].min() > 10000000:
-                    AddStock(i[0])
-
+    
+    with open("../list_of_monitoring_stocks.txt", "r") as f: # TODO: CHANGE move to Stocks monitor
+        raw_text = f.read()
+        for i in raw_text.split('\n'):
+            if i != '':
+                try:
+                    AddStock(i)
+                except Exception:
+                    continue
 
 def insert(table: str, column_values: Dict):
     columns = ', '.join( column_values.keys() )
