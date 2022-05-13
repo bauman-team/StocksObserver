@@ -42,9 +42,9 @@ def CreateDB():
 		        		                    id BIGSERIAL NOT NULL PRIMARY KEY,
 			        	                    stock_name VARCHAR(8) NOT NULL REFERENCES stocks (stock_name),
 				                            telegram_id BIGINT NOT NULL REFERENCES users (telegram_id),
-				                            target_value INTEGER NOT NULL DEFAULT 0,
+				                            target_value DOUBLE PRECISION NOT NULL DEFAULT 0,
                                             target_grow BOOLEAN NOT NULL);'''
-
+        # TODO: CREATE add trigger for unique pair user-value
         # TODO: CREATE table (user_id, token_paid_accept)
 
         cursor = postgresql_connection.cursor()
@@ -65,31 +65,34 @@ def CreateDB():
 
 def AddUser(telegram_id: int):
     try:
-        cursor.execute('INSERT INTO users (telegram_id) VALUES ({0});'.format(telegram_id))
+        cursor.execute('INSERT INTO users (telegram_id) VALUES ({0})'.format(telegram_id))
         conn.commit()
         logger.info("Added new user!")
     except psycopg2.Error as err:
         logger.info("This user is exist!")
 
 def AddStock(stock_name: str):
-    cursor.execute('INSERT INTO stocks (stock_name) VALUES (\'{0}\');'.format(stock_name))
+    cursor.execute('INSERT INTO stocks (stock_name) VALUES (\'{0}\')'.format(stock_name))
     conn.commit()
 
-def AddNotification(telegram_id: int, stock_name: str, target_value=0, target_grow=True):
-    cursor.execute('INSERT INTO user_notifications (stock_name, telegram_id, target_value, target_grow) VALUES (\'{0}\', {1}, {2}, {3});'.format(stock_name, telegram_id, target_value, target_grow))
+def AddNotification(telegram_id: int, stock_name: str, target_value=0., target_grow=False):
+    cursor.execute("INSERT INTO user_notifications (stock_name, telegram_id, target_value, target_grow) VALUES ('{0}', {1}, {2}, {3})".format(stock_name, telegram_id, target_value, target_grow))
     conn.commit()
 
-def DropNotification(telegram_id: int, stock_name: str):
-    cursor.execute("DELETE FROM user_notifications WHERE stock_name = '{0}' AND telegram_id = {1};".format(stock_name, telegram_id))
+def DropNotification(telegram_id: int, stock_name: str, drop_all=False, target_value=0.):
+    if drop_all:
+        cursor.execute("DELETE FROM user_notifications WHERE stock_name = '{0}' AND telegram_id = {1};".format(stock_name, telegram_id))
+    else:
+        cursor.execute("DELETE FROM user_notifications WHERE stock_name = '{0}' AND telegram_id = {1} AND target_value = {2}".format(stock_name, telegram_id, target_value))
     conn.commit()
 
 def DropAllNotification(telegram_id: int):
-    cursor.execute('DELETE FROM user_notifications WHERE telegram_id = {0};'.format(telegram_id))
+    cursor.execute('DELETE FROM user_notifications WHERE telegram_id = {0}'.format(telegram_id))
     conn.commit()
 
 def DropUser(telegram_id: int):
     DropAllNotification(telegram_id)
-    cursor.execute('DELETE FROM users WHERE telegram_id = {0};'.format(telegram_id))
+    cursor.execute('DELETE FROM users WHERE telegram_id = {0}'.format(telegram_id))
     conn.commit()
 
 def DropStocks():
@@ -124,6 +127,19 @@ def insert(table: str, column_values: Dict):
         f"VALUES ({placeholders})",
         values)
     conn.commit()
+
+
+def fetchall_unique(table: str, columns: List[str]) -> List[Tuple]:
+    columns_joined = ", ".join(columns)
+    cursor.execute(f"SELECT DISTINCT {columns_joined} FROM {table}")
+    rows = cursor.fetchall()
+    result = []
+    for row in rows:
+        dict_row = {}
+        for index, column in enumerate(columns):
+            dict_row[column] = row[index]
+        result.append(dict_row)
+    return result
 
 
 def fetchall(table: str, columns: List[str]) -> List[Tuple]:

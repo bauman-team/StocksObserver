@@ -5,6 +5,7 @@ from dbQueries import *
 import time
 import requests
 from pymemcache.client import base
+from pymemcache import MemcacheError
 from keras.models import load_model
 from keras.models import Sequential
 from keras.layers import Dense
@@ -160,7 +161,7 @@ def make_predictions(client, debug_info=False):
         print('All predicted')
 
 
-def is_moex_work(target_date):
+def is_moex_work(target_date): # TODO: CHANGE try catch for requests
     r = requests.get('https://iss.moex.com/iss/engines/stock.xml')
     dict_data = xmltodict.parse(r.content)
     target_date_str = target_date.strftime('%Y-%m-%d')
@@ -177,10 +178,10 @@ def main():
     client = base.Client(('127.0.0.1', 11211)) # TODO: CREATE add yml config
     try:
         client.get(".") # check memcached
-    except ConnectionRefusedError as err:
+    except MemcacheError as err:
         logger.fatal("Memcahed error refused connection!")
         exit()
-    except Exception as err:
+    except Exception as err: # TODO: ??? delete
         logger.fatal(err)
         exit()
 
