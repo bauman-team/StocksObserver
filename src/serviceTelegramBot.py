@@ -5,10 +5,8 @@ import logging
 import os
 from aiogram import Bot, Dispatcher, executor, types, utils
 from aiogram.dispatcher import filters
-
 from middlewares import *
 from messageHandler import *
-
 
 
 API_TOKEN = os.environ['TELTOKEN']
