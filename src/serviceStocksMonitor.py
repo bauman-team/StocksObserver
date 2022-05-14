@@ -12,7 +12,6 @@ from statistics import Stat
 from moex import Moex
 from forecastSystem import ForecastSystem
 
-
 # Configure logging
 logger = logging.getLogger('stocksMonitorService')
 logger.setLevel(logging.INFO)

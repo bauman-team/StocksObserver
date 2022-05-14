@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import xmltodict
 import datetime
+from dateutil.relativedelta import relativedelta
 
 class Moex:
 
@@ -25,6 +26,13 @@ class Moex:
     @classmethod
     def is_work_today(cls):
         return cls.is_work_at(datetime.datetime.today())
+
+    @classmethod
+    def get_last_working_day(cls):
+        temp_date = datetime.datetime.today().date()
+        while not cls.is_work_at(temp_date):
+            temp_date -= relativedelta(days=1)
+        return temp_date
 
     @classmethod
     def get_candle_closing_prices(cls, stock_name, interval, start):

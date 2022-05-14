@@ -63,6 +63,8 @@ class ForecastSystem:
             counter = 1
         rnd = 4
         start = (datetime.date.today() - relativedelta(month=1)).strftime('%Y-%m-%d')
+        accuracy = Stat.get_accuracy_for_all_stocks()
+
         for stock_name in stocks_names:
             model = load_model(f'{cls.__model_path}{stock_name}.h5')
             scaler = joblib.load(f"{cls.__scaler_path}{stock_name}.save")
@@ -81,12 +83,12 @@ class ForecastSystem:
             curr_y = last_data.iloc[-1]['close']
             pred_time = (datetime.datetime.strptime(last_data.iloc[-1]['begin'], "%Y-%m-%d %H:%M:%S") +
                          relativedelta(minutes=30)).strftime("%H:%M %d.%m.%y")
-            client.set(stock_name, (curr_y, next_y, pred_time, rnd))
 
+            client.set(stock_name, (curr_y, next_y, pred_time, accuracy[stock_name]))
             Stat.save_prediction(pred_time, stock_name, curr_y, next_y)
 
             if debug_info:
-                print(counter, stock_name, (curr_y, next_y, pred_time, rnd))
+                print(counter, stock_name, (curr_y, next_y, pred_time))
                 print()
                 counter += 1
         if debug_info:
@@ -123,3 +125,4 @@ class ForecastSystem:
         for stock_name in stocks_names:
             if cls.__need_update_model(stock_name):
                 cls.__create_new_model(stock_name)
+

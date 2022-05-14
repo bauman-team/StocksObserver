@@ -10,6 +10,8 @@ from aiogram.types import InputFile
 from middlewares import *
 from messageHandler import *
 
+from statistics import Stat
+
 API_TOKEN = os.environ['TELTOKEN']
 
 # Configure logging
@@ -103,10 +105,15 @@ async def send_question_clear(message: types.Message):
     accept_button.add(types.InlineKeyboardButton(text="Decline", callback_data="notifications_clear_decline"))
     await message.reply("Warning! Do you want to drop all notifications?", reply_markup=accept_button)
 
-@dp.message_handler(commands=['log', 'statistics'])
+@dp.message_handler(commands=['log'])
 async def send_question_clear(message: types.Message):
-    file_name = message.get_command()[1:]
-    file = InputFile(path_or_bytesio=f"../{'info' if file_name == 'log' else file_name}.log")
+    file = InputFile(path_or_bytesio="../info.log")
+    await message.reply_document(file)
+
+@dp.message_handler(commands=['statistics'])
+async def send_question_clear(message: types.Message):
+    Stat.save_report_to_file('../stat_report.txt')
+    file = InputFile(path_or_bytesio="../stat_report.txt")
     await message.reply_document(file)
 
 @dp.message_handler()

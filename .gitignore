@@ -11,3 +11,4 @@ venv
 models
 scalers
 admins.txt
+stat_report.txt

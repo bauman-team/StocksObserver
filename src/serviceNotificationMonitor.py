@@ -68,12 +68,16 @@ async def main():
                 curr_y = float(tup[0])
                 next_y = float(tup[1])
                 pred_time = tup[2][2:-1]
-                rnd = int(tup[3])
                 pred_str = "РОСТ" if next_y > curr_y else "ПАДЕНИЕ"
-                print(stock_name, next_y, curr_y, pred_time, round((next_y - curr_y) / curr_y * 100, rnd))
+                accuracy = round(float(tup[3]) * 100, 4)
+                print(stock_name, next_y, curr_y, pred_time, round((next_y - curr_y) / curr_y * 100, 4), accuracy)
                 for n in user_notifies:
                     if n['stock_name'] == stock_name:
-                        await send_message(n['telegram_id'], f"Акция {n['stock_name']}\nТекущая цена: {curr_y} руб\nПрогноз на {pred_time}: {pred_str}\n[ {next_y} руб ({round((next_y - curr_y) / curr_y * 100, rnd)}%) ]")
+                        await send_message(n['telegram_id'], f"Акция {stock_name}\n"
+                                                             f"Текущая цена: {curr_y} руб\n"
+                                                             f"Прогноз на {pred_time}: {pred_str}\n[ {next_y} руб "
+                                                             f"({round((next_y - curr_y) / curr_y * 100, 4)}%) ]\n"
+                                                             f"Точность прогнозов для {stock_name}: {accuracy}%")
                 client.delete(stock_name)
             curr_value = client.get(stock_name+"_curr")
             if curr_value != None:
