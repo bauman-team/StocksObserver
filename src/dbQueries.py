@@ -66,14 +66,17 @@ def CreateDB():
 def AddUser(telegram_id: int):
     try:
         cursor.execute('INSERT INTO users (telegram_id) VALUES ({0})'.format(telegram_id))
-        conn.commit()
         logger.info("Added new user!")
     except psycopg2.Error as err:
         logger.info("This user is exist!")
+    finally:
+        conn.commit()
 
 def AddStock(stock_name: str):
-    cursor.execute('INSERT INTO stocks (stock_name) VALUES (\'{0}\')'.format(stock_name))
-    conn.commit()
+    try:
+        cursor.execute('INSERT INTO stocks (stock_name) VALUES (\'{0}\')'.format(stock_name))
+    finally:
+        conn.commit()
 
 def AddNotification(telegram_id: int, stock_name: str, target_value=0., target_grow=False):
     cursor.execute("INSERT INTO user_notifications (stock_name, telegram_id, target_value, target_grow) VALUES ('{0}', {1}, {2}, {3})".format(stock_name, telegram_id, target_value, target_grow))
@@ -101,21 +104,20 @@ def DropStocks():
 
 ### initiate DB
 if __name__ == '__main__':
-    r = requests.get(url)
+    """r = requests.get(url)
     r.encoding = 'utf-8'
     j = r.json()
-    CreateDB()
-    DropStocks()
-    start = (datetime.date.today() - relativedelta(months=1)).strftime('%Y-%m-%d')
-    with requests.Session() as session:
-        for i in j['marketdata']['data']:
-            if (i[1] != None) and (i[0] not in ['TRNFP', 'LNZL', 'AKRN', 'BELU', 'BANEP', 'SMLT', 'CBOM', 'ENPG', 'FESH', 'GCHE']):
-                last_data = pd.DataFrame(
-                    apimoex.get_board_candles(session, security=i[0], interval=24, columns=("begin", "value"),
-                                              start=start))
-                if last_data['value'].min() > 10000000:
-                    AddStock(i[0])
-
+    CreateDB() 
+    DropStocks()"""
+    
+    with open("../list_of_monitoring_stocks.txt", "r") as f:  # TODO: CHANGE move to Stocks monitor
+        raw_text = f.read()
+        for i in raw_text.split('\n'):
+            if i != '':
+                try:
+                    AddStock(i)
+                except Exception:
+                    continue
 
 def insert(table: str, column_values: Dict):
     columns = ', '.join( column_values.keys() )
@@ -162,4 +164,4 @@ def delete(table: str, row_id: int) -> None:
 
 
 def get_cursor():
-    return 
+    return

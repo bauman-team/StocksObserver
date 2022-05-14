@@ -4,11 +4,10 @@ from dbQueries import *
 from pymemcache.client import base
 from pymemcache import MemcacheError
 
-stocks = fetchall('stocks', ['stock_name'])
-stocks_name = [i['stock_name'] for i in stocks]
+stocks_name = [i['stock_name'] for i in fetchall('stocks', ['stock_name'])]
 
 def sub_to_notifications(user_id: int, raw_message: str):
-    client = base.Client(('127.0.0.1', 11211)) # TODO: CREATE add yml config
+    client = base.Client(('127.0.0.1', 11211))  # TODO: CREATE add yml config
     # no ping memcached because it used 
     message = raw_message.split(' ')
     stock_name = message[0][1:] if message[0][0] in "+-" else message[0]
@@ -31,7 +30,7 @@ def sub_to_notifications(user_id: int, raw_message: str):
             except Exception:
                 DropNotification(user_id, stock_name, True)
             return "droped"
-        else: # TODO: CREATE short information
+        else:  # TODO: CREATE short information
             try:
                 curr_value = float(client.get(stock_name+"_curr").decode())
                 return f"Акция {stock_name}\nТекущая цена: {curr_value} руб"
