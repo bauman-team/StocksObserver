@@ -10,7 +10,6 @@ from aiogram.types import InputFile
 from middlewares import *
 from messageHandler import *
 
-API_TOKEN = os.environ['TELTOKEN']
 
 # Configure logging
 logger = logging.getLogger('telegramBotHandlerService')
@@ -21,7 +20,18 @@ logger.addHandler(fileLogHandler)
 formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s')
 fileLogHandler.setFormatter(formatter)
 
+
 logger.info("Start logging")
+
+
+# Initialize token
+API_TOKEN = ''
+try:
+    API_TOKEN = os.environ['TELTOKEN']
+except Exception:
+    logger.fatal("Token variable is not exist in environ!")
+    exit(1)
+
 
 # Initialize list of admins
 admins_ids_map = []
@@ -33,22 +43,32 @@ try:
                 admins_ids_map.append(int(i))
             except Exception:
                 continue
+    logger.info("Admins are initialized.")
 except Exception:
     logger.error("Admins file is not exist!")
 
+
 # Initialize bot and dispatcher
-bot = Bot(token=API_TOKEN)
-dp = Dispatcher(bot)
+try:
+    global bot, dp
+    bot = Bot(token=API_TOKEN)
+    dp = Dispatcher(bot)
+except Exception:
+    logger.fatal("Bot dispatcher is not initialized!")
+    exit(1)
+logger.info("Bot dispatcher is initialized.")
 dp.middleware.setup(middleware = AccessMiddleware(admins_ids_map))
+
 
 # Initialize buttons
 list_of_buttons = types.ReplyKeyboardMarkup(resize_keyboard=True)
-list_of_buttons.add(*["/search", "/list", "/help"])
-list_of_buttons.add("/clear")
+list_of_buttons.add(*["/search", "/list", "/stocks"])
+list_of_buttons.add(*["/clear", "/help"])
+
 
 list_admin_buttons = types.ReplyKeyboardMarkup(resize_keyboard=True)
-list_admin_buttons.add(*["/search", "/list", "/help"])
-list_admin_buttons.add("/clear")
+list_admin_buttons.add(*["/search", "/list", "/stocks"])
+list_admin_buttons.add(*["/clear", "/help"])
 list_admin_buttons.add(*admin_buttons)
 
 
@@ -75,6 +95,7 @@ help_massage = utils.markdown.text(
     sep="\n"
 )
 
+
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     AddUser(message.from_user.id)
@@ -83,9 +104,11 @@ async def send_welcome(message: types.Message):
     else:
         await message.answer(help_massage, reply_markup=list_of_buttons)
 
+
 @dp.message_handler(commands=['help'])
 async def send_help(message: types.Message):
     await message.answer(help_massage)
+
 
 @dp.message_handler(commands=['list'])
 async def send_monitoringList(message: types.Message):
@@ -96,12 +119,19 @@ async def send_monitoringList(message: types.Message):
             user_stocks.append([i['stock_name'], i['target_value']])
     await message.answer(user_stocks)
 
+
 @dp.message_handler(commands=['clear'])
 async def send_question_clear(message: types.Message):
     accept_button = types.InlineKeyboardMarkup()
     accept_button.add(types.InlineKeyboardButton(text="Accept drop all", callback_data="notifications_clear_accept"))
     accept_button.add(types.InlineKeyboardButton(text="Decline", callback_data="notifications_clear_decline"))
     await message.reply("Warning! Do you want to drop all notifications?", reply_markup=accept_button)
+
+
+@dp.message_handler(commands=['stocks'])
+async def send_help(message: types.Message):
+    await message.answer(str(sorted([i for i in stocks_names]))[1:-1].replace("'",""))
+
 
 @dp.message_handler(commands=['log', 'statistics'])
 async def send_question_clear(message: types.Message):

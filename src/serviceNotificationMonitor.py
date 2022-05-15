@@ -39,12 +39,6 @@ async def send_message(user_id, msg):
         logger.fatal(err)
         exit(1)
 
-# TODO: CREATE handler target price
-
-stocks = fetchall('stocks', ['stock_name'])
-stocks_names = [i['stock_name'] for i in stocks]
-# TODO: CREATE ? not working days (and StocksMonitor)
-
 
 async def main():
     """for stock_name in stocks_names:
@@ -82,11 +76,25 @@ async def main():
                     if n['stock_name'] == stock_name and (n['target_value'] <= curr_value and n['target_grow'] or n['target_value'] >= curr_value and not n['target_grow']):
                         delete('user_notifications', n['id'])
                         await send_message(n['telegram_id'], f"Акция {n['stock_name']} достигла целевой цены: {n['target_value']} руб")
+        deleted_stocks = client.get("deleted_stocks")
+        if deleted_stocks != None:
+            deleted_stocks = deleted_stocks.decode()
+            deleted_stocks_names = deleted_stocks[1:-1].replace("'", "").split(', ')
+            for stock_name in deleted_stocks_names:
+                await send_message(n['telegram_id'], f"Акция {stock_name} удалена из мониторинга!")
+            client.delete("deleted_stocks")
+        added_stocks = client.get("added_stocks")
+        if added_stocks != None:
+            added_stocks = added_stocks.decode()
+            added_stocks_names = added_stocks[1:-1].replace("'", "").split(', ')
+            for stock_name in added_stocks_names:
+                await send_message(n['telegram_id'], f"Акция {stock_name} стала доступна для мониторинга!")
+            client.delete("added_stocks")
         time.sleep(1)
     await bot.session.close()
     
 
 if __name__ == '__main__':
-    executor.asyncio.run(main()) # TODO: FIX closing error
+    executor.asyncio.run(main())
     
     
