@@ -75,6 +75,8 @@ list_admin_buttons.add(*admin_buttons)
 help_massage = utils.markdown.text(
     "Hi!",
     "I'm StocksObserverBot!\n",
+    "To list all available stocks to monitoring:",
+    "/stocks\n",
     "To add a stock to monitoring:",
     "+YNDX",
     "or",
