@@ -1,3 +1,4 @@
+from hashlib import new
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -20,10 +21,6 @@ from sklearn.preprocessing import MinMaxScaler
 import xmltodict
 import logging
 from threading import Thread
-
-
-stocks = fetchall('stocks', ['stock_name'])
-stocks_names = [i['stock_name'] for i in stocks]
 
 # Configure logging
 logger = logging.getLogger('stocksMonitorService')
@@ -184,14 +181,24 @@ def main():
 
     try:
         with open("../list_of_monitoring_stocks.txt", "r") as f:
-            raw_text = f.read()
-            for i in raw_text.split('\n'):
-                if i != '':
-                    try:
-                        AddStock(i)
-                        logger.info(f"Added new stock to monitoring: {i}")
-                    except Exception:
-                        continue
+            print('HI')
+            actual_stocks_list = f.read().split('\n')
+            actual_stocks_list = [i for i in actual_stocks_list if i != '']
+            drop_stocks_list = [i for i in stocks_names if i not in actual_stocks_list]
+            new_stocks_list = [i for i in actual_stocks_list if i not in stocks_names]
+
+            for i in drop_stocks_list:
+                DropStock(i)
+                logger.info(f"Drop stock from monitoring: {i}")
+            if drop_stocks_list != []:
+                client.set("deleted_stocks", drop_stocks_list)
+            
+            for i in new_stocks_list:
+                AddStock(i)
+                logger.info(f"Added new stock to monitoring: {i}")
+            if new_stocks_list != []:
+                client.set("added_stocks", new_stocks_list)
+
         logger.info("Stocks list up to date.")
     except Exception:
         logger.error("Error, not found file with list of monitoring stocks!")
