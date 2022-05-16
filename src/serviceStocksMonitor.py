@@ -58,7 +58,7 @@ def main():
 
     scan_thread = Thread(target=scanning_price, args=(client,))
     scan_thread.start()
-    time.sleep(1)
+    time.sleep(2)
     stat_thread = Thread(target=Stat.logging, args=(client,))
     stat_thread.start()
 

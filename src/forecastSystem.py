@@ -84,7 +84,10 @@ class ForecastSystem:
             pred_time = (datetime.datetime.strptime(last_data.iloc[-1]['begin'], "%Y-%m-%d %H:%M:%S") +
                          relativedelta(minutes=30)).strftime("%H:%M %d.%m.%y")
 
-            client.set(stock_name, (curr_y, next_y, pred_time, accuracy[stock_name]))
+            if stock_name in accuracy.keys():
+                client.set(stock_name, (curr_y, next_y, pred_time, accuracy[stock_name]))
+            else:
+                client.set(stock_name, (curr_y, next_y, pred_time, None))
             Stat.save_prediction(pred_time, stock_name, curr_y, next_y)
 
             if debug_info:

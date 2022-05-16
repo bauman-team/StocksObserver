@@ -69,15 +69,17 @@ async def main():
                 next_y = float(tup[1])
                 pred_time = tup[2][2:-1]
                 pred_str = "РОСТ" if next_y > curr_y else "ПАДЕНИЕ"
-                accuracy = round(float(tup[3]) * 100, 4)
+                accuracy = round(float(tup[3]) * 100, 4) if (tup[3][1:] != 'None') else None
                 print(stock_name, next_y, curr_y, pred_time, round((next_y - curr_y) / curr_y * 100, 4), accuracy)
+                message = f"Акция {stock_name}\n" \
+                          f"Текущая цена: {curr_y} руб\n" \
+                          f"Прогноз на {pred_time}: {pred_str}\n[ {next_y} руб" \
+                          f"({round((next_y - curr_y) / curr_y * 100, 4)}%) ]"
+                if accuracy:
+                    message += f"\nТочность прогнозов для {stock_name}: {accuracy}%"
                 for n in user_notifies:
                     if n['stock_name'] == stock_name:
-                        await send_message(n['telegram_id'], f"Акция {stock_name}\n"
-                                                             f"Текущая цена: {curr_y} руб\n"
-                                                             f"Прогноз на {pred_time}: {pred_str}\n[ {next_y} руб "
-                                                             f"({round((next_y - curr_y) / curr_y * 100, 4)}%) ]\n"
-                                                             f"Точность прогнозов для {stock_name}: {accuracy}%")
+                        await send_message(n['telegram_id'], message)
                 client.delete(stock_name)
             curr_value = client.get(stock_name+"_curr")
             if curr_value != None:
@@ -88,9 +90,8 @@ async def main():
                         await send_message(n['telegram_id'], f"Акция {n['stock_name']} достигла целевой цены: {n['target_value']} руб")
         time.sleep(1)
     await bot.session.close()
-    
+
 
 if __name__ == '__main__':
     executor.asyncio.run(main()) # TODO: FIX closing error
-    
-    
+
