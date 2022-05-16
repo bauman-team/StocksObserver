@@ -23,7 +23,18 @@ logger.addHandler(fileLogHandler)
 formatter = logging.Formatter('%(asctime)s  %(name)s  %(levelname)s: %(message)s')
 fileLogHandler.setFormatter(formatter)
 
+
 logger.info("Start logging")
+
+
+# Initialize token
+API_TOKEN = ''
+try:
+    API_TOKEN = os.environ['TELTOKEN']
+except Exception:
+    logger.fatal("Token variable is not exist in environ!")
+    exit(1)
+
 
 # Initialize list of admins
 admins_ids_map = []
@@ -35,28 +46,40 @@ try:
                 admins_ids_map.append(int(i))
             except Exception:
                 continue
+    logger.info("Admins are initialized.")
 except Exception:
     logger.error("Admins file is not exist!")
 
+
 # Initialize bot and dispatcher
-bot = Bot(token=API_TOKEN)
-dp = Dispatcher(bot)
+try:
+    global bot, dp
+    bot = Bot(token=API_TOKEN)
+    dp = Dispatcher(bot)
+except Exception:
+    logger.fatal("Bot dispatcher is not initialized!")
+    exit(1)
+logger.info("Bot dispatcher is initialized.")
 dp.middleware.setup(middleware = AccessMiddleware(admins_ids_map))
+
 
 # Initialize buttons
 list_of_buttons = types.ReplyKeyboardMarkup(resize_keyboard=True)
-list_of_buttons.add(*["/search", "/list", "/help"])
-list_of_buttons.add("/clear")
+list_of_buttons.add(*["/search", "/list", "/stocks"])
+list_of_buttons.add(*["/clear", "/help"])
+
 
 list_admin_buttons = types.ReplyKeyboardMarkup(resize_keyboard=True)
-list_admin_buttons.add(*["/search", "/list", "/help"])
-list_admin_buttons.add("/clear")
+list_admin_buttons.add(*["/search", "/list", "/stocks"])
+list_admin_buttons.add(*["/clear", "/help"])
 list_admin_buttons.add(*admin_buttons)
 
 
 help_massage = utils.markdown.text(
     "Hi!",
     "I'm StocksObserverBot!\n",
+    "To list all available stocks to monitoring:",
+    "/stocks\n",
     "To add a stock to monitoring:",
     "+YNDX",
     "or",
@@ -77,6 +100,7 @@ help_massage = utils.markdown.text(
     sep="\n"
 )
 
+
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     AddUser(message.from_user.id)
@@ -85,9 +109,11 @@ async def send_welcome(message: types.Message):
     else:
         await message.answer(help_massage, reply_markup=list_of_buttons)
 
+
 @dp.message_handler(commands=['help'])
 async def send_help(message: types.Message):
     await message.answer(help_massage)
+
 
 @dp.message_handler(commands=['list'])
 async def send_monitoringList(message: types.Message):
@@ -97,6 +123,7 @@ async def send_monitoringList(message: types.Message):
         if i['telegram_id'] == message.from_user.id:
             user_stocks.append([i['stock_name'], i['target_value']])
     await message.answer(user_stocks)
+
 
 @dp.message_handler(commands=['clear'])
 async def send_question_clear(message: types.Message):
@@ -109,6 +136,10 @@ async def send_question_clear(message: types.Message):
 async def send_question_clear(message: types.Message):
     file = InputFile(path_or_bytesio="../info.log")
     await message.reply_document(file)
+
+@dp.message_handler(commands=['stocks'])
+async def send_help(message: types.Message):
+    await message.answer(str(sorted([i for i in stocks_names]))[1:-1].replace("'",""))
 
 @dp.message_handler(commands=['statistics'])
 async def send_question_clear(message: types.Message):

@@ -10,9 +10,11 @@ then
 
     systemctl daemon-reload
 
-    systemctl restart serviceTelegramBot
-
     systemctl restart serviceStocksMonitor
+
+    sleep 30s
+
+    systemctl restart serviceTelegramBot
 
     systemctl restart serviceNotificationMonitor
     

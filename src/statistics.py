@@ -31,25 +31,33 @@ class Stat:
     def logging(cls, client):
         cls.__create_logger()
         while True:
-            if Moex.is_work_today() and \
-                (datetime.datetime.now().time() > datetime.time(10, 30)) and \
-                (datetime.datetime.now().time() <= datetime.time(18, 50)):
-                while datetime.datetime.now().minute % 10 != 0:
-                    time.sleep(
-                        (9 - datetime.datetime.now().minute % 10) * 60 + (59 - datetime.datetime.now().second) + (
-                            1 - datetime.datetime.now().microsecond / 1000000))
-                pred_time = datetime.datetime.now().strftime("%H:%M %d.%m.%y")
-                if pred_time in cls.__stat_map:
-                    curr_prices = cls.__get_current_prices()
-                    for stock_name in stocks_names:
-                        init_price = cls.__stat_map[pred_time][stock_name]['init_price']
-                        pred_price = cls.__stat_map[pred_time][stock_name]['pred_price']
-                        curr_price = curr_prices[stock_name]
-                        is_right = int((pred_price - init_price) * (curr_price - init_price) > 0)
-                        log_string = f"{pred_time},{stock_name},{init_price},{curr_price},{pred_price},{is_right}"
-                        cls.__stat_logger.info(log_string)
-                    del cls.__stat_map[pred_time]
-            time.sleep(60)
+            try:
+                if Moex.is_work_today() and \
+                    (datetime.datetime.now().time() > datetime.time(10, 30)) and \
+                    (datetime.datetime.now().time() <= datetime.time(18, 50)):
+                    while datetime.datetime.now().minute % 10 != 0:
+                        time.sleep(
+                            (9 - datetime.datetime.now().minute % 10) * 60 + (59 - datetime.datetime.now().second) + (
+                                1 - datetime.datetime.now().microsecond / 1000000))
+                    pred_time = datetime.datetime.now().strftime("%H:%M %d.%m.%y")
+                    print(pred_time)
+                    print(cls.__stat_map)
+                    if pred_time in cls.__stat_map:
+                        curr_prices = cls.__get_current_prices(client)
+                        print(curr_prices)
+                        for stock_name in stocks_names:
+                            init_price = cls.__stat_map[pred_time][stock_name]['init_price']
+                            pred_price = cls.__stat_map[pred_time][stock_name]['pred_price']
+                            curr_price = curr_prices[stock_name]
+                            is_right = int((pred_price - init_price) * (curr_price - init_price) > 0)
+                            log_string = f"{pred_time},{stock_name},{init_price},{curr_price},{pred_price},{is_right}"
+                            print(log_string)
+                            cls.__stat_logger.info(log_string)
+                        del cls.__stat_map[pred_time]
+                time.sleep(60)
+            except Exception as err:
+                print(err)
+                #cls.__stat_logger.info(err)
 
     @classmethod
     def __get_current_prices(cls, client):
@@ -63,12 +71,12 @@ class Stat:
             else:
                 res = [int(line.rstrip()[-1]) for line in stat_file if
                        datetime.datetime.strptime(line.rstrip().split(',')[0], "%H:%M %d.%m.%y").date() == target_date]
+        accuracy = None
         if res != []:
             accuracy = sum(res) / len(res)
-            print(f"Верных прогнозов за " + (f"{target_date}" if target_date else "всё время") + f": {round(accuracy * 100, 4)}%")
+            """print(f"Верных прогнозов за " + (f"{target_date}" if target_date else "всё время") + f": {round(accuracy * 100, 4)}%")
         else:
-            accuracy = None
-            print(f"Нет прогнозов" + f" за {target_date}" if target_date else "")
+            print(f"Нет прогнозов" + f" за {target_date}" if target_date else "")"""
         return accuracy
 
     @classmethod
@@ -86,10 +94,10 @@ class Stat:
                 stock_stat_map[pred_datetime] = is_right
         if stock_stat_map != {}:
             stock_accuracy = sum(stock_stat_map.values()) / len(stock_stat_map.values())
-            print(f"Верных прогнозов для {stock_name} за " + (f"{target_date}" if target_date else "всё время") + f": "
+            """print(f"Верных прогнозов для {stock_name} за " + (f"{target_date}" if target_date else "всё время") + f": "
                                                                                 f"{round(stock_accuracy * 100, 4)}%")
         else:
-            print(f"Нет статистики прогнозов для {target_stock_name}" + f" за {target_date}" if target_date else "")
+            print(f"Нет статистики прогнозов для {target_stock_name}" + f" за {target_date}" if target_date else "")"""
         return stock_accuracy
 
     @classmethod
@@ -113,10 +121,10 @@ class Stat:
             for stock_name, stock_stat_map in history_stat_map.items():
                 stock_accuracy = sum(stock_stat_map.values()) / len(stock_stat_map.values())
                 stocks_accuracies[stock_name] = stock_accuracy
-                print(f"Верных прогнозов для {stock_name} за " + (
+                """print(f"Верных прогнозов для {stock_name} за " + (
                     f"{target_date}" if target_date else "всё время") + f": {round(stock_accuracy * 100, 4)}%")
         else:
-            print(f"Нет статистики прогнозов" + f" за {target_date}" if target_date else "")
+            print(f"Нет статистики прогнозов" + f" за {target_date}" if target_date else "")"""
         return stocks_accuracies
 
     @classmethod

@@ -74,9 +74,12 @@ def AddUser(telegram_id: int):
 
 def AddStock(stock_name: str):
     try:
+        print('INSERT INTO stocks (stock_name) VALUES (\'{0}\')'.format(stock_name))
         cursor.execute('INSERT INTO stocks (stock_name) VALUES (\'{0}\')'.format(stock_name))
     finally:
         conn.commit()
+        update_stocks_names_list()
+        print(stocks_names)
 
 def AddNotification(telegram_id: int, stock_name: str, target_value=0., target_grow=False):
     cursor.execute("INSERT INTO user_notifications (stock_name, telegram_id, target_value, target_grow) VALUES ('{0}', {1}, {2}, {3})".format(stock_name, telegram_id, target_value, target_grow))
@@ -98,9 +101,12 @@ def DropUser(telegram_id: int):
     cursor.execute('DELETE FROM users WHERE telegram_id = {0}'.format(telegram_id))
     conn.commit()
 
-def DropStocks():
-    cursor.execute('DELETE FROM stocks')
+def DropStock(stock_name: str):
+    cursor.execute(f"DELETE FROM user_notifications WHERE stock_name = '{stock_name}'")
     conn.commit()
+    cursor.execute(f"DELETE FROM stocks WHERE stock_name = '{stock_name}'")
+    conn.commit()
+    update_stocks_names_list()
 
 ### initiate DB
 if __name__ == '__main__':
@@ -163,5 +169,19 @@ def delete(table: str, row_id: int) -> None:
     conn.commit()
 
 
+def update_stocks_names_list():
+    global stocks_names 
+    stocks_names = [i['stock_name'] for i in fetchall('stocks', ['stock_name'])]
+
+
 def get_cursor():
     return
+
+
+# Initialize stocks list
+try:
+    update_stocks_names_list()
+except Exception:
+    logger.fatal("Stocks list is not initialized!")
+    exit(1)
+logger.info("Stocks list is initialized.")
