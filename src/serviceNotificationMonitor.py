@@ -69,7 +69,7 @@ async def main():
                           f"Текущая цена: {curr_y} руб\n" \
                           f"Прогноз на {pred_time}: {pred_str}\n[ {next_y} руб" \
                           f"({round((next_y - curr_y) / curr_y * 100, 4)}%) ]"
-                if accuracy:
+                if accuracy != None:
                     message += f"\nТочность прогнозов для {stock_name}: {accuracy}%"
                 for n in user_notifies:
                     if n['stock_name'] == stock_name:
