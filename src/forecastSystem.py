@@ -89,7 +89,7 @@ class ForecastSystem:
                 rng = range(last_data.shape[0] + 1 - lgs_num * 3, last_data.shape[0] - 1, 3)
                 input_data = np.array([last_data.iloc[i]['close'] for i in rng]).reshape(-1, 1)
                 last_real_x = np.array(scaler.transform(input_data)).reshape(1, lgs_num, 1)
-                next_y = round(scaler.inverse_transform(model.predict(last_real_x))[0][0], rnd)
+                next_y = np.round(scaler.inverse_transform(model.predict(last_real_x))[0][0], 6)
                 curr_y = last_data.iloc[-1]['close']
                 pred_time = (datetime.datetime.strptime(last_data.iloc[-1]['begin'], "%Y-%m-%d %H:%M:%S") +
                              relativedelta(minutes=30)).strftime("%H:%M %d.%m.%y")
