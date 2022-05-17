@@ -37,8 +37,14 @@ class Moex:
     @classmethod
     def get_candle_closing_prices(cls, stock_name, interval, start):
         with requests.Session() as session:
-            return pd.DataFrame(
-                apimoex.get_board_candles(session, security=stock_name, interval=interval, columns=('begin', 'close'), start=start))
+            try:
+                return pd.DataFrame(
+                    apimoex.get_board_candles(session, security=stock_name, interval=interval, columns=('begin', 'close'), start=start))
+            except Exception as err:
+                print("Получен некорректный ответ от apimoex")
+                print(err)
+                return None
+
 
     @classmethod
     def get_current_stocks_prices(cls):
