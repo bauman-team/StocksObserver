@@ -110,13 +110,13 @@ def DropStock(stock_name: str):
 
 ### initiate DB
 if __name__ == '__main__':
-    r = requests.get(url)
+    """r = requests.get(url)
     r.encoding = 'utf-8'
     j = r.json()
     CreateDB() 
-    #DropStocks()
+    DropStocks()"""
     
-    with open("../list_of_monitoring_stocks.txt", "r") as f: # TODO: CHANGE move to Stocks monitor
+    with open("../list_of_monitoring_stocks.txt", "r") as f:  # TODO: CHANGE move to Stocks monitor
         raw_text = f.read()
         for i in raw_text.split('\n'):
             if i != '':
@@ -175,7 +175,7 @@ def update_stocks_names_list():
 
 
 def get_cursor():
-    return 
+    return
 
 
 # Initialize stocks list

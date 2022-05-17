@@ -12,7 +12,9 @@ Telegram bot for monitoring stock quotes. By the use StocksObserverBot you can:
     * predictions are available 30 minutes after the opening of the exchange
     * predictions are made 30 minutes ahead
     * predictions are made every 10 minutes
+
 Available all volatile shares from the Moscow Exchange
+
 Prediction accuracy is improving every working day
 
 
