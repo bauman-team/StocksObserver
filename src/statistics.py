@@ -3,6 +3,8 @@ import datetime
 import time
 from dbQueries import fetchall
 from moex import Moex
+import pandas as pd
+import numpy as np
 
 
 stocks_names = [i['stock_name'] for i in fetchall('stocks', ['stock_name'])]
@@ -40,28 +42,35 @@ class Stat:
                             (9 - datetime.datetime.now().minute % 10) * 60 + (59 - datetime.datetime.now().second) + (
                                 1 - datetime.datetime.now().microsecond / 1000000))
                     pred_time = datetime.datetime.now().strftime("%H:%M %d.%m.%y")
-                    print(pred_time)
-                    print(cls.__stat_map)
+                    print("pred_time:", pred_time)
+                    print("__stat_map keys:", cls.__stat_map.keys())
                     if pred_time in cls.__stat_map:
                         curr_prices = cls.__get_current_prices(client)
-                        print(curr_prices)
-                        for stock_name in stocks_names:
-                            init_price = cls.__stat_map[pred_time][stock_name]['init_price']
-                            pred_price = cls.__stat_map[pred_time][stock_name]['pred_price']
-                            curr_price = curr_prices[stock_name]
-                            is_right = int((pred_price - init_price) * (curr_price - init_price) > 0)
-                            log_string = f"{pred_time},{stock_name},{init_price},{curr_price},{pred_price},{is_right}"
-                            print(log_string)
-                            cls.__stat_logger.info(log_string)
+                        print("curr_prices:", curr_prices)
+                        for stock_name in cls.__stat_map[pred_time].keys():
+                            if stock_name in curr_prices.keys():
+                                init_price = cls.__stat_map[pred_time][stock_name]['init_price']
+                                pred_price = cls.__stat_map[pred_time][stock_name]['pred_price']
+                                curr_price = curr_prices[stock_name]
+                                is_right = int((pred_price - init_price) * (curr_price - init_price) > 0)
+                                log_string = f"{pred_time},{stock_name},{init_price},{curr_price},{pred_price},{is_right}"
+                                print(log_string)
+                                cls.__stat_logger.info(log_string)
+                            else:
+                                print(f"Текущая цена для акции {stock_name} не найдена")
                         del cls.__stat_map[pred_time]
                 time.sleep(60)
             except Exception as err:
                 print(err)
-                #cls.__stat_logger.info(err)
 
     @classmethod
     def __get_current_prices(cls, client):
-        return {stock_name: float(client.get(stock_name + "_curr").decode()) for stock_name in stocks_names}
+        current_prices = {}
+        for stock_name in stocks_names:
+            curr_price = client.get(stock_name + "_curr")
+            if curr_price != None:
+                current_prices[stock_name] = float(curr_price.decode())
+        return current_prices
 
     @classmethod
     def get_summary_accuracy(cls, target_date=None):
@@ -129,12 +138,17 @@ class Stat:
 
     @classmethod
     def save_report_to_file(cls, file_name):
-        accuracies = cls.get_accuracy_for_all_stocks()
+        start = datetime.datetime.now()
+
         last_working_day = Moex.get_last_working_day()
         last_working_day_str = last_working_day.strftime("%d.%m.%y")
-        last_accuracies = cls.get_accuracy_for_all_stocks(last_working_day)
+
+        accuracies = cls.get_accuracy_for_all_stocks()
         summary_accuracy = cls.get_summary_accuracy()
+
+        last_accuracies = cls.get_accuracy_for_all_stocks(last_working_day)
         last_summary_accuracy = cls.get_summary_accuracy(last_working_day)
+
         with open(file_name, 'w') as stat_file:
             if last_summary_accuracy is not None:
                 stat_file.write(f"Статистика правильных прогнозов за {last_working_day_str}\n\n")
@@ -148,3 +162,37 @@ class Stat:
                 stat_file.write(f"\nВсего верных прогнозов: {round(summary_accuracy * 100, 4)}%")
             else:
                 stat_file.write(f"\nНет статистики")
+
+        print((datetime.datetime.now() - start).microseconds / 1000, "ms")
+
+    """@classmethod
+    def save_report_to_file2(cls, file_name):
+        start = datetime.datetime.now()
+
+        data = pd.read_csv('../statistics.csv')
+        data['date'] = pd.to_datetime(data['date'])
+
+        last_working_day = Moex.get_last_working_day()
+        last_working_day_str = last_working_day.strftime("%d.%m.%y")
+
+        accuracies = data.groupby('stock_name')['is_right'].mean().apply(lambda x: round(x * 100, 4))
+        summary_accuracy = round(data['is_right'].mean() * 100, 4)
+
+        last_accuracies = data[data['date'].dt.date == last_working_day].groupby('stock_name')['is_right'].mean().apply(lambda x: round(x * 100, 4))
+        last_summary_accuracy = round(data[data['date'].dt.date == last_working_day]['is_right'].mean() * 100, 4)
+
+        with open(file_name, 'w') as stat_file:
+            if not pd.isnull(last_summary_accuracy):
+                stat_file.write(f"Статистика правильных прогнозов за {last_working_day_str}\n\n")
+                for stock_name, accuracy in last_accuracies.iteritems():
+                    stat_file.write(f"Акция {stock_name}: {accuracy}%\n")
+                stat_file.write(f"\nВсего верных прогнозов за {last_working_day_str}: {last_summary_accuracy}%\n\n\n\n")
+            if not pd.isnull(summary_accuracy):
+                stat_file.write("Статистика правильных прогнозов за всё время\n\n")
+                for stock_name, accuracy in accuracies.iteritems():
+                    stat_file.write(f"Акция {stock_name}: {accuracy}%\n")
+                stat_file.write(f"\nВсего верных прогнозов: {summary_accuracy}%")
+            else:
+                stat_file.write(f"\nНет статистики")
+
+        print((datetime.datetime.now() - start).microseconds / 1000, "ms")"""

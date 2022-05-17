@@ -15,8 +15,13 @@ def sub_to_notifications(user_id: int, raw_message: str):
             try:
                 message[1] = float(message[1].replace(',','.'))
                 try:
-                    curr_value = float(client.get(stock_name+"_curr").decode())
-                    AddNotification(user_id, stock_name, message[1], curr_value < message[1])
+                    curr_value = client.get(stock_name + "_curr")
+                    if curr_value != None:
+                        curr_value = float(curr_value.decode())
+                        AddNotification(user_id, stock_name, message[1], curr_value < message[1])
+                    else:
+                        AddNotification(user_id, stock_name)
+                        return f"Акция добавлена в мониторинг, отслеживание цены недоступно"
                 except Exception:
                     return "service isn't working"
             except Exception:
@@ -31,8 +36,12 @@ def sub_to_notifications(user_id: int, raw_message: str):
             return "droped"
         else:  # TODO: CREATE short information
             try:
-                curr_value = float(client.get(stock_name+"_curr").decode())
-                return f"Акция {stock_name}\nТекущая цена: {curr_value} руб"
+                curr_value = client.get(stock_name + "_curr")
+                if curr_value != None:
+                    curr_value = float(curr_value.decode())
+                    return f"Акция {stock_name}\nТекущая цена: {curr_value} руб"
+                else:
+                    return f"Нет информации о текущей цене акции"
             except Exception:
                 return "service isn't working"
     return "error msg"

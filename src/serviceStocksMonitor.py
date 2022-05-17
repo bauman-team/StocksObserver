@@ -30,7 +30,7 @@ def scanning_price(client):
     while True:
         current_prices = Moex.get_current_stocks_prices()
         for i in current_prices:
-            if i[0] in stocks_names:
+            if i[0] in stocks_names and i[1] is not None:
                 client.set(i[0] + "_curr", i[1])
         time.sleep(1 - datetime.datetime.now().microsecond / 1000000)
 

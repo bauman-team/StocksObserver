@@ -61,7 +61,7 @@ class ForecastSystem:
     def make_predictions(cls, client, debug_info=False):
         if debug_info:
             counter = 1
-        rnd = 4
+        rnd = 6
         start = (datetime.date.today() - relativedelta(month=1)).strftime('%Y-%m-%d')
         accuracy = Stat.get_accuracy_for_all_stocks()
 
@@ -92,7 +92,6 @@ class ForecastSystem:
 
             if debug_info:
                 print(counter, stock_name, (curr_y, next_y, pred_time))
-                print()
                 counter += 1
         if debug_info:
             print('All predicted')
