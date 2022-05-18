@@ -152,12 +152,12 @@ class Stat:
         with open(file_name, 'w') as stat_file:
             if last_summary_accuracy is not None:
                 stat_file.write(f"Статистика правильных прогнозов за {last_working_day_str}\n\n")
-                for stock_name, accuracy in last_accuracies.items():
+                for stock_name, accuracy in sorted(last_accuracies.items()):
                     stat_file.write(f"Акция {stock_name}: {round(accuracy * 100, 4)}%\n")
                 stat_file.write(f"\nВсего верных прогнозов за {last_working_day_str}: {round(last_summary_accuracy * 100, 4)}%\n\n\n\n")
             if summary_accuracy is not None:
                 stat_file.write("Статистика правильных прогнозов за всё время\n\n")
-                for stock_name, accuracy in accuracies.items():
+                for stock_name, accuracy in sorted(accuracies.items()):
                     stat_file.write(f"Акция {stock_name}: {round(accuracy * 100, 4)}%\n")
                 stat_file.write(f"\nВсего верных прогнозов: {round(summary_accuracy * 100, 4)}%")
             else:
@@ -184,12 +184,12 @@ class Stat:
         with open(file_name, 'w') as stat_file:
             if not pd.isnull(last_summary_accuracy):
                 stat_file.write(f"Статистика правильных прогнозов за {last_working_day_str}\n\n")
-                for stock_name, accuracy in last_accuracies.iteritems():
+                for stock_name, accuracy in sorted(last_accuracies.iteritems()):
                     stat_file.write(f"Акция {stock_name}: {accuracy}%\n")
                 stat_file.write(f"\nВсего верных прогнозов за {last_working_day_str}: {last_summary_accuracy}%\n\n\n\n")
             if not pd.isnull(summary_accuracy):
                 stat_file.write("Статистика правильных прогнозов за всё время\n\n")
-                for stock_name, accuracy in accuracies.iteritems():
+                for stock_name, accuracy in sorted(accuracies.iteritems()):
                     stat_file.write(f"Акция {stock_name}: {accuracy}%\n")
                 stat_file.write(f"\nВсего верных прогнозов: {summary_accuracy}%")
             else:

@@ -50,4 +50,9 @@ class Moex:
     def get_current_stocks_prices(cls):
         r = requests.get(cls.__url)
         r.encoding = 'utf-8'
-        return r.json()['marketdata']['data']
+        try:
+            return r.json()['marketdata']['data']
+        except Exception as err:
+            print("Получен некорректный ответ от API биржи")
+            print(err)
+            return None
