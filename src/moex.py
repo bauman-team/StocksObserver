@@ -56,3 +56,53 @@ class Moex:
             print("Получен некорректный ответ от API биржи")
             print(err)
             return None
+
+    @classmethod
+    def get_min_steps(cls, stocks_names):
+        steps = {}
+        for stock_name in stocks_names:
+            try:
+                step = None
+                url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{stock_name}.xml"
+                dict_data = xmltodict.parse(requests.get(url).content)
+                rows = dict_data['document']['data'][0]['rows']['row']
+                if type(rows) == list:
+                    for row in rows:
+                        if row['@BOARDID'] == 'TQBR':
+                            step = float(row['@MINSTEP'])
+                            break
+                else:
+                    if rows['@BOARDID'] == 'TQBR':
+                        step = float(rows['@MINSTEP'])
+            except Exception as err:
+                print("Получен некорректный ответ от API биржи")
+                print(err)
+            finally:
+                steps[stock_name] = step
+        return steps
+
+    """@classmethod
+    def get_stocks_levels(cls, stocks_names=None):
+        levels = {}
+        if stocks_names is None:
+            stocks_names = [elem[0] for elem in requests.get(cls.__url).json()['marketdata']['data']]
+        for stock_name in stocks_names:
+            try:
+                level = None
+                url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{stock_name}.xml"
+                dict_data = xmltodict.parse(requests.get(url).content)
+                rows = dict_data['document']['data'][0]['rows']['row']
+                if type(rows) == list:
+                    for row in rows:
+                        if row['@BOARDID'] == 'TQBR':
+                            level = int(row['@LISTLEVEL'])
+                            break
+                else:
+                    if rows['@BOARDID'] == 'TQBR':
+                        level = int(row['@LISTLEVEL'])
+            except Exception as err:
+                print("Получен некорректный ответ от API биржи")
+                print(err)
+            finally:
+                levels[stock_name] = level
+        return levels"""

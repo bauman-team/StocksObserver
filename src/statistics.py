@@ -52,8 +52,10 @@ class Stat:
                                 init_price = cls.__stat_map[pred_time][stock_name]['init_price']
                                 pred_price = cls.__stat_map[pred_time][stock_name]['pred_price']
                                 curr_price = curr_prices[stock_name]
-                                is_right = int((pred_price - init_price) * (curr_price - init_price) > 0)
-                                log_string = f"{pred_time},{stock_name},{init_price},{curr_price},{pred_price},{is_right}"
+                                pred_delta = pred_price - init_price
+                                real_delta = curr_price - init_price
+                                is_right = int((pred_delta * real_delta > 0) or (pred_delta == 0 and real_delta == 0))
+                                log_string = f"{pred_time},{stock_name},{init_price},{curr_price},{str(pred_price)},{is_right}"
                                 print(log_string)
                                 cls.__stat_logger.info(log_string)
                             else:
@@ -83,9 +85,7 @@ class Stat:
         accuracy = None
         if res != []:
             accuracy = sum(res) / len(res)
-            """print(f"Верных прогнозов за " + (f"{target_date}" if target_date else "всё время") + f": {round(accuracy * 100, 4)}%")
-        else:
-            print(f"Нет прогнозов" + f" за {target_date}" if target_date else "")"""
+
         return accuracy
 
     @classmethod
@@ -103,10 +103,7 @@ class Stat:
                 stock_stat_map[pred_datetime] = is_right
         if stock_stat_map != {}:
             stock_accuracy = sum(stock_stat_map.values()) / len(stock_stat_map.values())
-            """print(f"Верных прогнозов для {stock_name} за " + (f"{target_date}" if target_date else "всё время") + f": "
-                                                                                f"{round(stock_accuracy * 100, 4)}%")
-        else:
-            print(f"Нет статистики прогнозов для {target_stock_name}" + f" за {target_date}" if target_date else "")"""
+
         return stock_accuracy
 
     @classmethod
@@ -130,10 +127,7 @@ class Stat:
             for stock_name, stock_stat_map in history_stat_map.items():
                 stock_accuracy = sum(stock_stat_map.values()) / len(stock_stat_map.values())
                 stocks_accuracies[stock_name] = stock_accuracy
-                """print(f"Верных прогнозов для {stock_name} за " + (
-                    f"{target_date}" if target_date else "всё время") + f": {round(stock_accuracy * 100, 4)}%")
-        else:
-            print(f"Нет статистики прогнозов" + f" за {target_date}" if target_date else "")"""
+
         return stocks_accuracies
 
     @classmethod
