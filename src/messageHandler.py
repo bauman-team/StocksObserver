@@ -9,7 +9,7 @@ def sub_to_notifications(user_id: int, raw_message: str):
     client = base.Client(('127.0.0.1', 11211))  # TODO: CREATE add yml config
     # no ping memcached because it used 
     message = raw_message.split(' ')
-    stock_name = message[0][1:] if message[0][0] in "+-" else message[0]
+    stock_name = (message[0][1:] if message[0][0] in "+-" else message[0]).upper()
     if stock_name in stocks_names:
         if raw_message[0] == '+':
             try:

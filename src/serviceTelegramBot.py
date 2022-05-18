@@ -143,9 +143,12 @@ async def send_help(message: types.Message):
 
 @dp.message_handler(commands=['statistics'])
 async def send_question_clear(message: types.Message):
+    full_stat_file = InputFile(path_or_bytesio="../statistics.log")
     Stat.save_report_to_file('../stat_report.txt')
-    file = InputFile(path_or_bytesio="../stat_report.txt")
-    await message.reply_document(file)
+    stat_report_file = InputFile(path_or_bytesio="../stat_report.txt")
+
+    await message.reply_document(full_stat_file)
+    await message.reply_document(stat_report_file)
 
 @dp.message_handler()
 async def add_to_monitoringList(message: types.Message):

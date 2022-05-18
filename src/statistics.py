@@ -47,13 +47,15 @@ class Stat:
                     if pred_time in cls.__stat_map:
                         curr_prices = cls.__get_current_prices(client)
                         print("curr_prices:", curr_prices)
-                        for stock_name in cls.__stat_map[pred_time].keys():
+                        for stock_name in sorted(cls.__stat_map[pred_time].keys()):
                             if stock_name in curr_prices.keys():
                                 init_price = cls.__stat_map[pred_time][stock_name]['init_price']
                                 pred_price = cls.__stat_map[pred_time][stock_name]['pred_price']
                                 curr_price = curr_prices[stock_name]
-                                is_right = int((pred_price - init_price) * (curr_price - init_price) > 0)
-                                log_string = f"{pred_time},{stock_name},{init_price},{curr_price},{pred_price},{is_right}"
+                                pred_delta = pred_price - init_price
+                                real_delta = curr_price - init_price
+                                is_right = int((pred_delta * real_delta > 0) or (pred_delta == 0 and real_delta == 0))
+                                log_string = f"{pred_time},{stock_name},{init_price},{curr_price},{str(pred_price)},{is_right}"
                                 print(log_string)
                                 cls.__stat_logger.info(log_string)
                             else:
@@ -83,9 +85,7 @@ class Stat:
         accuracy = None
         if res != []:
             accuracy = sum(res) / len(res)
-            """print(f"Верных прогнозов за " + (f"{target_date}" if target_date else "всё время") + f": {round(accuracy * 100, 4)}%")
-        else:
-            print(f"Нет прогнозов" + f" за {target_date}" if target_date else "")"""
+
         return accuracy
 
     @classmethod
@@ -103,10 +103,7 @@ class Stat:
                 stock_stat_map[pred_datetime] = is_right
         if stock_stat_map != {}:
             stock_accuracy = sum(stock_stat_map.values()) / len(stock_stat_map.values())
-            """print(f"Верных прогнозов для {stock_name} за " + (f"{target_date}" if target_date else "всё время") + f": "
-                                                                                f"{round(stock_accuracy * 100, 4)}%")
-        else:
-            print(f"Нет статистики прогнозов для {target_stock_name}" + f" за {target_date}" if target_date else "")"""
+
         return stock_accuracy
 
     @classmethod
@@ -130,10 +127,7 @@ class Stat:
             for stock_name, stock_stat_map in history_stat_map.items():
                 stock_accuracy = sum(stock_stat_map.values()) / len(stock_stat_map.values())
                 stocks_accuracies[stock_name] = stock_accuracy
-                """print(f"Верных прогнозов для {stock_name} за " + (
-                    f"{target_date}" if target_date else "всё время") + f": {round(stock_accuracy * 100, 4)}%")
-        else:
-            print(f"Нет статистики прогнозов" + f" за {target_date}" if target_date else "")"""
+
         return stocks_accuracies
 
     @classmethod
@@ -152,12 +146,12 @@ class Stat:
         with open(file_name, 'w') as stat_file:
             if last_summary_accuracy is not None:
                 stat_file.write(f"Статистика правильных прогнозов за {last_working_day_str}\n\n")
-                for stock_name, accuracy in last_accuracies.items():
+                for stock_name, accuracy in sorted(last_accuracies.items()):
                     stat_file.write(f"Акция {stock_name}: {round(accuracy * 100, 4)}%\n")
                 stat_file.write(f"\nВсего верных прогнозов за {last_working_day_str}: {round(last_summary_accuracy * 100, 4)}%\n\n\n\n")
             if summary_accuracy is not None:
                 stat_file.write("Статистика правильных прогнозов за всё время\n\n")
-                for stock_name, accuracy in accuracies.items():
+                for stock_name, accuracy in sorted(accuracies.items()):
                     stat_file.write(f"Акция {stock_name}: {round(accuracy * 100, 4)}%\n")
                 stat_file.write(f"\nВсего верных прогнозов: {round(summary_accuracy * 100, 4)}%")
             else:
@@ -184,12 +178,12 @@ class Stat:
         with open(file_name, 'w') as stat_file:
             if not pd.isnull(last_summary_accuracy):
                 stat_file.write(f"Статистика правильных прогнозов за {last_working_day_str}\n\n")
-                for stock_name, accuracy in last_accuracies.iteritems():
+                for stock_name, accuracy in sorted(last_accuracies.iteritems()):
                     stat_file.write(f"Акция {stock_name}: {accuracy}%\n")
                 stat_file.write(f"\nВсего верных прогнозов за {last_working_day_str}: {last_summary_accuracy}%\n\n\n\n")
             if not pd.isnull(summary_accuracy):
                 stat_file.write("Статистика правильных прогнозов за всё время\n\n")
-                for stock_name, accuracy in accuracies.iteritems():
+                for stock_name, accuracy in sorted(accuracies.iteritems()):
                     stat_file.write(f"Акция {stock_name}: {accuracy}%\n")
                 stat_file.write(f"\nВсего верных прогнозов: {summary_accuracy}%")
             else:
