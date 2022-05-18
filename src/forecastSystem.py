@@ -29,7 +29,7 @@ class ForecastSystem:
 
         start_date = datetime.datetime.today() - relativedelta(years=1)
         data = Moex.get_candle_closing_prices(stock_name, 10, start_date)
-        if data:
+        if data is not None:
             rng = range(2 + (data.shape[0] % 3), data.shape[0], 3)
             data = data.iloc[rng]
 
@@ -73,16 +73,16 @@ class ForecastSystem:
             scaler = joblib.load(f"{cls.__scaler_path}{stock_name}.save")
             lgs_num = model.input_shape[1]
             last_data = Moex.get_candle_closing_prices(stock_name, 10, start)
-            if last_data:
+            if last_data is not None:
                 while (datetime.datetime.strptime(last_data.iloc[-1]['begin'], "%Y-%m-%d %H:%M:%S") +
                        relativedelta(minutes=10)) < datetime.datetime.now():
                     print(f"Свеча для {stock_name} ещё не пришла")
                     time.sleep(1)
                     last_data = Moex.get_candle_closing_prices(stock_name, 10, start)
-                    if not last_data:
+                    if last_data is None:
                         break
 
-                if not last_data:
+                if last_data is None:
                     print(f"Не удалось построить прогноз для {stock_name}")
                     continue
 
