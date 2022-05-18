@@ -31,7 +31,7 @@ def scanning_price(client):
         current_prices = Moex.get_current_stocks_prices()
         if current_prices is not None:
             for i in current_prices:
-                if i[0] in stocks_names and i[1] is not None:
+                if (i[0] in stocks_names) and (i[1] is not None):
                     client.set(i[0] + "_curr", i[1])
         else:
             print(f"Не удалось получить текущие цены акций")

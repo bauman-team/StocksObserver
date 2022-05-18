@@ -47,7 +47,7 @@ class Stat:
                     if pred_time in cls.__stat_map:
                         curr_prices = cls.__get_current_prices(client)
                         print("curr_prices:", curr_prices)
-                        for stock_name in cls.__stat_map[pred_time].keys():
+                        for stock_name in sorted(cls.__stat_map[pred_time].keys()):
                             if stock_name in curr_prices.keys():
                                 init_price = cls.__stat_map[pred_time][stock_name]['init_price']
                                 pred_price = cls.__stat_map[pred_time][stock_name]['pred_price']

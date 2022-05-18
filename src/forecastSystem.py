@@ -91,15 +91,18 @@ class ForecastSystem:
                 last_real_x = np.array(scaler.transform(input_data)).reshape(1, lgs_num, 1)
                 next_y = scaler.inverse_transform(model.predict(last_real_x))[0][0]
 
-                step_str = str(cls.__min_steps[stock_name])
-                if float(cls.__min_steps[stock_name]).is_integer():
-                    next_y = round(round(next_y / cls.__min_steps[stock_name]) * cls.__min_steps[stock_name])
-                else:
-                    if '.' in step_str:
-                        precision = len(step_str) - step_str.find('.') - 1
+                if cls.__min_steps is not None:
+                    step_str = str(cls.__min_steps[stock_name])
+                    if float(cls.__min_steps[stock_name]).is_integer():
+                        next_y = round(round(next_y / cls.__min_steps[stock_name]) * cls.__min_steps[stock_name])
                     else:
-                        precision = int(step_str[step_str.find('e') + 2:])
-                    next_y = round(round(next_y / cls.__min_steps[stock_name]) * cls.__min_steps[stock_name], precision)
+                        if '.' in step_str:
+                            precision = len(step_str) - step_str.find('.') - 1
+                        else:
+                            precision = int(step_str[step_str.find('e') + 2:])
+                        next_y = round(round(next_y / cls.__min_steps[stock_name]) * cls.__min_steps[stock_name], precision)
+                else:
+                    next_y = round(next_y, 6)
 
                 curr_y = last_data.iloc[-1]['close']
                 pred_time = (datetime.datetime.strptime(last_data.iloc[-1]['begin'], "%Y-%m-%d %H:%M:%S") +
