@@ -61,6 +61,8 @@ async def main():
                 tup = value[1:-1].split(',')
                 curr_y = float(tup[0])
                 next_y = float(tup[1])
+                if next_y.is_integer():
+                    next_y = int(next_y)
                 pred_time = tup[2][2:-1]
                 pred_str = "РОСТ" if next_y > curr_y else "ПАДЕНИЕ"
                 accuracy = round(float(tup[3]) * 100, 4) if (tup[3][1:] != 'None') else None

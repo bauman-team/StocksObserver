@@ -21,6 +21,7 @@ stocks_names = [i['stock_name'] for i in fetchall('stocks', ['stock_name'])]
 class ForecastSystem:
     __model_path = "../models/"
     __scaler_path = "../scalers/"
+    __min_steps = Moex.get_min_steps(stocks_names)
 
     @classmethod
     def __create_new_model(cls, stock_name, lags=20, epochs=10, debug_info=False):
@@ -64,7 +65,6 @@ class ForecastSystem:
     def make_predictions(cls, client, debug_info=False):
         if debug_info:
             counter = 1
-        rnd = 6
         start = (datetime.date.today() - relativedelta(month=1)).strftime('%Y-%m-%d')
         accuracy = Stat.get_accuracy_for_all_stocks()
 
@@ -89,7 +89,21 @@ class ForecastSystem:
                 rng = range(last_data.shape[0] + 1 - lgs_num * 3, last_data.shape[0] - 1, 3)
                 input_data = np.array([last_data.iloc[i]['close'] for i in rng]).reshape(-1, 1)
                 last_real_x = np.array(scaler.transform(input_data)).reshape(1, lgs_num, 1)
-                next_y = np.round(scaler.inverse_transform(model.predict(last_real_x))[0][0], 6)
+                next_y = scaler.inverse_transform(model.predict(last_real_x))[0][0]
+
+                if cls.__min_steps is not None:
+                    step_str = str(cls.__min_steps[stock_name])
+                    if float(cls.__min_steps[stock_name]).is_integer():
+                        next_y = round(round(next_y / cls.__min_steps[stock_name]) * cls.__min_steps[stock_name])
+                    else:
+                        if '.' in step_str:
+                            precision = len(step_str) - step_str.find('.') - 1
+                        else:
+                            precision = int(step_str[step_str.find('e') + 2:])
+                        next_y = round(round(next_y / cls.__min_steps[stock_name]) * cls.__min_steps[stock_name], precision)
+                else:
+                    next_y = round(next_y, 6)
+
                 curr_y = last_data.iloc[-1]['close']
                 pred_time = (datetime.datetime.strptime(last_data.iloc[-1]['begin'], "%Y-%m-%d %H:%M:%S") +
                              relativedelta(minutes=30)).strftime("%H:%M %d.%m.%y")
